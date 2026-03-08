@@ -1,0 +1,38 @@
+<div class="docs-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">ng-flow</span>
+      <span class="logo-badge">docs</span>
+    </div>
+    <nav class="nav">
+      @for (item of nav; track item.id) {
+        <button
+          class="nav-item"
+          [class.active]="activePage() === item.id"
+          (click)="navigate(item.id)"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </button>
+      }
+    </nav>
+    <div class="sidebar-footer">
+      <span class="footer-version">Angular 21 · ng-flow v1.0</span>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="content">
+    @switch (activePage()) {
+      @case ('intro')    { <app-docs-intro /> }
+      @case ('nodes')    { <app-docs-nodes /> }
+      @case ('edges')    { <app-docs-edges /> }
+      @case ('handles')  { <app-docs-handles /> }
+      @case ('viewport') { <app-docs-viewport /> }
+      @case ('api')      { <app-docs-api /> }
+      @case ('demo')     { <app-docs-demo /> }
+    }
+  </main>
+</div>

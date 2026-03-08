@@ -1,0 +1,39 @@
+@import '../../../libs/ng-flow/src/styles.css';
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #0f1117;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ---- ng-flow canvas theme ---- */
+.vue-flow { background: #131620; }
+.vue-flow__pane { background: transparent; }
+
+/* ---- code blocks ---- */
+.code-block {
+  background: #0d1117;
+  color: #e6edf3;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+  margin: 12px 0 20px;
+}
+
+.code-block .kw  { color: #ff7b72; }   /* keyword */
+.code-block .str { color: #a5d6ff; }   /* string */
+.code-block .cm  { color: #8b949e; }   /* comment */
+.code-block .fn  { color: #d2a8ff; }   /* function/decorator */
+.code-block .num { color: #79c0ff; }   /* number */
+.code-block .cls { color: #ffa657; }   /* class name */

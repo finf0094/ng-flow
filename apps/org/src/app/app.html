@@ -1,0 +1,30 @@
+<div class="demo-page">
+  <header class="demo-header">
+    <span class="demo-logo">⚡</span>
+    <span class="demo-title">ng-flow &mdash; Workflow Editor</span>
+    <span class="demo-hint">Drag nodes &middot; Scroll to zoom &middot; Connect handles</span>
+  </header>
+
+  <div class="flow-wrapper">
+    <lib-ng-flow
+      [nodes]="initialNodes"
+      [edges]="initialEdges"
+      [fitViewOnInit]="true"
+      (connect)="onConnect($event)"
+      (nodeClick)="onNodeClick($event)"
+      style="width: 100%; height: 100%"
+    >
+      <lib-panel position="top-left">
+        <div class="controls">
+          <button (click)="flow.zoomIn()" title="Zoom In">＋</button>
+          <button (click)="flow.zoomOut()" title="Zoom Out">－</button>
+          <button (click)="flow.fitView()" title="Fit View">⊡</button>
+        </div>
+      </lib-panel>
+
+      <lib-panel position="bottom-left">
+        <div class="event-log">{{ lastEvent() }}</div>
+      </lib-panel>
+    </lib-ng-flow>
+  </div>
+</div>
