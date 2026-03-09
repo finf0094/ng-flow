@@ -1,0 +1,82 @@
+@import '../../../libs/ng-flow/src/styles.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #141720;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+/* ── n8n-style handle dots ──────────────────────────────────── */
+.vue-flow__handle {
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  background: #141720 !important;
+  border: 1.5px solid #4b5563 !important;
+  transition: transform 0.15s ease, border-color 0.15s ease !important;
+  z-index: 10 !important;
+}
+
+.vue-flow__handle.source {
+  cursor: crosshair !important;
+}
+
+.vue-flow__handle.source:hover,
+.vue-flow__handle--connecting {
+  transform: scale(1.5) !important;
+  border-color: #818cf8 !important;
+  background: #1e2030 !important;
+}
+
+.vue-flow__handle.target:hover {
+  border-color: #818cf8 !important;
+  background: #1e2030 !important;
+}
+
+/* ── n8n-style edges ────────────────────────────────────────── */
+.vue-flow__edge-path {
+  stroke: #374151 !important;
+  stroke-width: 2px !important;
+}
+
+.vue-flow__edge.selected .vue-flow__edge-path,
+.vue-flow__edge:hover .vue-flow__edge-path {
+  stroke: #6366f1 !important;
+}
+
+.vue-flow__edge-textwrapper {
+  font-size: 11px;
+}
+
+/* Arrow marker color */
+.vue-flow__arrowhead polyline,
+.vue-flow__arrowhead path {
+  stroke: #374151 !important;
+  fill: #374151 !important;
+}
+
+.vue-flow__edge.selected .vue-flow__arrowhead polyline,
+.vue-flow__edge.selected .vue-flow__arrowhead path {
+  stroke: #6366f1 !important;
+  fill: #6366f1 !important;
+}
+
+/* Connection line while dragging */
+.vue-flow__connection-path {
+  stroke: #6366f1 !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5, 5 !important;
+}
+
+/* Selection box */
+.vue-flow__selection {
+  background: rgba(99, 102, 241, 0.05) !important;
+  border: 1px solid rgba(99, 102, 241, 0.4) !important;
+}

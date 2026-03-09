@@ -6,7 +6,16 @@
       "Bash(do sed:*)",
       "Bash(npx tsc:*)",
       "Bash(xargs grep -l \"background\")",
-      "Bash(xargs grep -l \"Background\")"
+      "Bash(xargs grep -l \"Background\")",
+      "Bash(xargs grep -l \"N8nSticky\")",
+      "WebSearch",
+      "Bash(xargs grep -l \"lucide\")",
+      "Bash(node -e \"const l = require\\(''lucide-angular''\\); const keys = Object.keys\\(l\\).filter\\(k => k !== ''LucideAngularModule'' && !k.startsWith\\(''lucide''\\)\\); console.log\\(keys.slice\\(0,20\\).join\\('', ''\\)\\); console.log\\(''Has Bot:'', ''Bot'' in l\\); console.log\\(''Has Globe:'', ''Globe'' in l\\); console.log\\(''Has GitBranch:'', ''GitBranch'' in l\\); console.log\\(''Has GitMerge:'', ''GitMerge'' in l\\); console.log\\(''Has StickyNote:'', ''StickyNote'' in l\\); console.log\\(''Has Sparkles:'', ''Sparkles'' in l\\);\")",
+      "Bash(npx ng build luigi --configuration=development)",
+      "Bash(npx @angular/build application --tsConfig=apps/luigi/tsconfig.app.json --browser=apps/luigi/src/main.ts)",
+      "Bash(NX_REJECT_UNKNOWN_LOCAL_CACHE=0 npx nx build luigi --skip-nx-cache)",
+      "Bash(node -e \"const p = require\\(''./node_modules/lucide-angular/package.json''\\); console.log\\(JSON.stringify\\(p.exports, null, 2\\)\\)\")",
+      "Bash(node:*)"
     ]
   }
 }
