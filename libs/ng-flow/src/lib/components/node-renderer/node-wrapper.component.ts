@@ -1,7 +1,6 @@
 import {
   Component,
   computed,
-  effect,
   ElementRef,
   HostListener,
   inject,
@@ -9,6 +8,7 @@ import {
   input,
   OnDestroy,
   OnInit,
+  reflectComponentType,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -39,6 +39,8 @@ import type { ComponentType, GraphNode } from '../../types';
     '[attr.data-id]': 'id()',
     '[style.transform]': '_transform()',
     '[style.z-index]': '_zIndex()',
+    '[style.width]': '_nodeStyleWidth()',
+    '[style.height]': '_nodeStyleHeight()',
     '[style.visibility]': 'node()?.hidden ? "hidden" : "visible"',
     '[style.pointer-events]': '"all"',
     '[style.position]': '"absolute"',
@@ -57,6 +59,24 @@ export class NodeWrapperComponent implements OnInit, OnDestroy {
   containerRef!: ViewContainerRef;
 
   readonly node = computed(() => this.flow.nodeLookup().get(this.id()));
+
+  _nodeStyleWidth = computed(() => {
+    const n = this.node();
+    if (!n) return null;
+    const styleWidth = (n.style as Record<string, string> | undefined)?.['width'];
+    if (styleWidth) return styleWidth;
+    if (n.width != null) return typeof n.width === 'number' ? `${n.width}px` : n.width;
+    return null;
+  });
+
+  _nodeStyleHeight = computed(() => {
+    const n = this.node();
+    if (!n) return null;
+    const styleHeight = (n.style as Record<string, string> | undefined)?.['height'];
+    if (styleHeight) return styleHeight;
+    if (n.height != null) return typeof n.height === 'number' ? `${n.height}px` : n.height;
+    return null;
+  });
 
   _isDraggable = computed(() => {
     const n = this.node();
@@ -144,11 +164,13 @@ export class NodeWrapperComponent implements OnInit, OnDestroy {
     });
 
     // Pass inputs via Angular's official setInput API (works with input() signals)
+    // Use reflectComponentType to check declared inputs first — avoids NG0303 console errors
+    // in debug builds where Angular logs the error before throwing.
+    const mirror = reflectComponentType(componentType);
+    const declaredInputs = new Set(mirror?.inputs.map((i) => i.templateName) ?? []);
     const trySetInput = (name: string, value: unknown) => {
-      try {
+      if (declaredInputs.has(name)) {
         ref.setInput(name, value);
-      } catch {
-        /* input not declared on component */
       }
     };
     trySetInput('id', node.id);

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { HandleComponent } from '../handle/handle.component';
 import { Position } from '../../types';
 import type { HandleConnectable } from '../../types';
+import { NodeResizerComponent } from '../node-resizer/node-resizer.component';
 
 @Component({
   selector: 'lib-default-node',
   standalone: true,
-  imports: [CommonModule, HandleComponent],
+  imports: [CommonModule, HandleComponent, NodeResizerComponent],
   template: `
     <lib-handle [type]="'target'" [position]="targetPosition()" />
     <div class="vue-flow__node-label">{{ label() }}</div>

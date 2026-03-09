@@ -14,7 +14,7 @@ import { getSimpleBezierPath } from '../../utils/edges/simple-bezier';
   template: `
     @if (_isConnecting()) {
       <svg class="vue-flow__connection-line-container" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none">
-        <g>
+        <g [attr.transform]="_transform()">
           <path
             class="vue-flow__connection-path"
             [attr.d]="_path()"
@@ -29,6 +29,11 @@ import { getSimpleBezierPath } from '../../utils/edges/simple-bezier';
 export class ConnectionLineComponent {
   readonly flow = inject(FlowService);
 
+  _transform = computed(() => {
+    const { x, y, zoom } = this.flow.viewport();
+    return `translate(${x},${y}) scale(${zoom})`;
+  });
+
   _isConnecting = computed(() => {
     const start = this.flow.connectionStartHandle();
     const pos = this.flow.connectionPosition();
@@ -40,11 +45,8 @@ export class ConnectionLineComponent {
     if (!start) return '';
 
     const pos = this.flow.connectionPosition();
-    const sourceNode = this.flow.getNode(start.nodeId);
-    if (!sourceNode) return '';
-
-    const sourceX = sourceNode.computedPosition.x + sourceNode.dimensions.width / 2;
-    const sourceY = sourceNode.computedPosition.y + sourceNode.dimensions.height / 2;
+    const sourceX = start.x;
+    const sourceY = start.y;
     const targetX = pos.x;
     const targetY = pos.y;
 

@@ -1,11 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
-import { NgFlowComponent, PanelComponent } from '@org/ng-flow';
+import { NgFlowComponent, PanelComponent, BackgroundComponent } from '@org/ng-flow';
 import type { Node, Edge } from '@org/ng-flow';
 
 @Component({
   selector: 'app-docs-viewport',
   standalone: true,
-  imports: [NgFlowComponent, PanelComponent],
+  imports: [NgFlowComponent, PanelComponent, BackgroundComponent],
   template: `
     <div class="page">
       <h1>Viewport</h1>
@@ -71,6 +71,7 @@ import type { Node, Edge } from '@org/ng-flow';
           [fitViewOnInit]="true"
           style="height: 400px"
         >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
           <lib-panel [position]="'top-right'">
             <div class="ctrl-bar">
               <button class="ctrl-btn" (click)="zoomIn()">＋ Zoom In</button>

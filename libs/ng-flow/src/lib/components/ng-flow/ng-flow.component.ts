@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   inject,
@@ -60,7 +61,7 @@ import type {
   templateUrl: './ng-flow.component.html',
   styleUrl: './ng-flow.component.css',
 })
-export class NgFlowComponent implements OnInit, OnChanges, OnDestroy {
+export class NgFlowComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   // ---- inputs (mirrors FlowProps) ----
   readonly id = input<string | undefined>(undefined);
   readonly nodes = input<Node[]>([]);
@@ -174,6 +175,12 @@ export class NgFlowComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     this._applyAllProps();
     this._subscribeToEvents();
+  }
+
+  ngAfterViewInit(): void {
+    if (this.flowContainerRef) {
+      this.flow.flowRef = this.flowContainerRef.nativeElement;
+    }
   }
 
   ngOnChanges(_changes: SimpleChanges): void {

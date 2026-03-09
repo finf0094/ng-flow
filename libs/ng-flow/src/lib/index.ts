@@ -1,6 +1,15 @@
 // Main component
 export { NgFlowComponent } from './components/ng-flow/ng-flow.component';
 
+// Background
+export { BackgroundComponent } from './components/background/background.component';
+export type { BackgroundVariant } from './components/background/background.component';
+
+// Node Resizer
+export { NodeResizerComponent } from './components/node-resizer/node-resizer.component';
+export { ResizeControlComponent } from './components/node-resizer/resize-control.component';
+export type { ResizeControlVariant, ResizeControlPosition, ResizeParams, ResizeParamsWithDirection } from './components/node-resizer/resize-control.component';
+
 // Sub-components
 export { HandleComponent } from './components/handle/handle.component';
 export { PanelComponent } from './components/panel/panel.component';

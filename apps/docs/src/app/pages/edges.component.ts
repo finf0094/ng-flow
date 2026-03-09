@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { MarkerType, NgFlowComponent } from '@org/ng-flow';
+import { MarkerType, NgFlowComponent, BackgroundComponent } from '@org/ng-flow';
 import type { Node, Edge } from '@org/ng-flow';
 
 @Component({
   selector: 'app-docs-edges',
   standalone: true,
-  imports: [NgFlowComponent],
+  imports: [NgFlowComponent, BackgroundComponent],
   template: `
     <div class="page">
       <h1>Edges</h1>
@@ -57,7 +57,9 @@ import type { Node, Edge } from '@org/ng-flow';
           [fitViewOnInit]="true"
           [nodesDraggable]="false"
           style="height: 500px"
-        />
+        >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
+        </lib-ng-flow>
       </div>
 
       <h2>Edge Options</h2>
@@ -109,7 +111,9 @@ import type { Node, Edge } from '@org/ng-flow';
           [fitViewOnInit]="true"
           [nodesDraggable]="false"
           style="height: 280px"
-        />
+        >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
+        </lib-ng-flow>
       </div>
     </div>
   `,
@@ -132,28 +136,28 @@ import type { Node, Edge } from '@org/ng-flow';
 })
 export class EdgesComponent {
   readonly allTypeNodes: Node[] = [
-    { id: 'a1', type: 'input',  position: { x: 80, y: 50  }, label: 'Source' },
-    { id: 'a2', type: 'output', position: { x: 400, y: 50  }, label: 'Target' },
-    { id: 'b1', type: 'input',  position: { x: 80, y: 140 }, label: 'Source' },
+    { id: 'a1', type: 'input', position: { x: 80, y: 50 }, label: 'Source' },
+    { id: 'a2', type: 'output', position: { x: 400, y: 50 }, label: 'Target' },
+    { id: 'b1', type: 'input', position: { x: 80, y: 140 }, label: 'Source' },
     { id: 'b2', type: 'output', position: { x: 400, y: 140 }, label: 'Target' },
-    { id: 'c1', type: 'input',  position: { x: 80, y: 230 }, label: 'Source' },
+    { id: 'c1', type: 'input', position: { x: 80, y: 230 }, label: 'Source' },
     { id: 'c2', type: 'output', position: { x: 400, y: 230 }, label: 'Target' },
-    { id: 'd1', type: 'input',  position: { x: 80, y: 320 }, label: 'Source' },
+    { id: 'd1', type: 'input', position: { x: 80, y: 320 }, label: 'Source' },
     { id: 'd2', type: 'output', position: { x: 400, y: 320 }, label: 'Target' },
-    { id: 'e1', type: 'input',  position: { x: 80, y: 410 }, label: 'Source' },
+    { id: 'e1', type: 'input', position: { x: 80, y: 410 }, label: 'Source' },
     { id: 'e2', type: 'output', position: { x: 400, y: 410 }, label: 'Target' },
   ];
 
   readonly allTypeEdges: Edge[] = [
-    { id: 'ea', source: 'a1', target: 'a2', type: 'default',       label: 'bezier' },
-    { id: 'eb', source: 'b1', target: 'b2', type: 'straight',      label: 'straight' },
-    { id: 'ec', source: 'c1', target: 'c2', type: 'step',          label: 'step' },
-    { id: 'ed', source: 'd1', target: 'd2', type: 'smoothstep',    label: 'smoothstep' },
+    { id: 'ea', source: 'a1', target: 'a2', type: 'default', label: 'bezier' },
+    { id: 'eb', source: 'b1', target: 'b2', type: 'straight', label: 'straight' },
+    { id: 'ec', source: 'c1', target: 'c2', type: 'step', label: 'step' },
+    { id: 'ed', source: 'd1', target: 'd2', type: 'smoothstep', label: 'smoothstep' },
     { id: 'ee', source: 'e1', target: 'e2', type: 'simple-bezier', label: 'simple-bezier' },
   ];
 
   readonly animNodes: Node[] = [
-    { id: 'x1', type: 'input',  position: { x: 80,  y: 100 }, label: 'Producer' },
+    { id: 'x1', type: 'input', position: { x: 80, y: 100 }, label: 'Producer' },
     { id: 'x2', type: 'output', position: { x: 420, y: 100 }, label: 'Consumer' },
   ];
 

@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { NgFlowComponent, HandleComponent, Position } from '@org/ng-flow';
+import { NgFlowComponent, HandleComponent, Position, BackgroundComponent } from '@org/ng-flow';
 import type { Node } from '@org/ng-flow';
 
 @Component({
@@ -30,7 +30,7 @@ class FourHandleNodeComponent {
 @Component({
   selector: 'app-docs-handles',
   standalone: true,
-  imports: [NgFlowComponent],
+  imports: [NgFlowComponent, BackgroundComponent],
   template: `
     <div class="page">
       <h1>Handles</h1>
@@ -97,7 +97,9 @@ class FourHandleNodeComponent {
           [edges]="[]"
           [fitViewOnInit]="true"
           style="height: 320px"
-        />
+        >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
+        </lib-ng-flow>
       </div>
 
       <h2>Multiple Handles</h2>

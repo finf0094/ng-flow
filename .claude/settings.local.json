@@ -4,7 +4,9 @@
       "Bash(npm install:*)",
       "Bash(npx nx:*)",
       "Bash(do sed:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(xargs grep -l \"background\")",
+      "Bash(xargs grep -l \"Background\")"
     ]
   }
 }

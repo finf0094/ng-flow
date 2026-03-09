@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { NgFlowComponent, HandleComponent } from '@org/ng-flow';
+import { NgFlowComponent, HandleComponent, BackgroundComponent } from '@org/ng-flow';
 import { Position } from '@org/ng-flow';
 import type { Node, Edge } from '@org/ng-flow';
 
@@ -34,7 +34,7 @@ class DocCustomNodeComponent {
 @Component({
   selector: 'app-docs-nodes',
   standalone: true,
-  imports: [NgFlowComponent],
+  imports: [NgFlowComponent, BackgroundComponent],
   template: `
     <div class="page">
       <h1>Nodes</h1>
@@ -75,7 +75,9 @@ class DocCustomNodeComponent {
           [edges]="builtinEdges"
           [fitViewOnInit]="true"
           style="height: 300px"
-        />
+        >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
+        </lib-ng-flow>
       </div>
 
       <h2>Custom Nodes</h2>
@@ -93,7 +95,9 @@ class DocCustomNodeComponent {
           [edges]="[]"
           [fitViewOnInit]="true"
           style="height: 280px"
-        />
+        >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
+        </lib-ng-flow>
       </div>
     </div>
   `,

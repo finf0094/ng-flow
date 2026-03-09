@@ -26,13 +26,16 @@
   <!-- Main content -->
   <main class="content">
     @switch (activePage()) {
-      @case ('intro')    { <app-docs-intro /> }
-      @case ('nodes')    { <app-docs-nodes /> }
-      @case ('edges')    { <app-docs-edges /> }
-      @case ('handles')  { <app-docs-handles /> }
-      @case ('viewport') { <app-docs-viewport /> }
-      @case ('api')      { <app-docs-api /> }
-      @case ('demo')     { <app-docs-demo /> }
+      @case ('intro')         { <app-docs-intro /> }
+      @case ('nodes')         { <app-docs-nodes /> }
+      @case ('edges')         { <app-docs-edges /> }
+      @case ('handles')       { <app-docs-handles /> }
+      @case ('interactivity') { <app-docs-interactivity /> }
+      @case ('background')    { <app-docs-background /> }
+      @case ('node-resizer')  { <app-docs-node-resizer /> }
+      @case ('viewport')      { <app-docs-viewport /> }
+      @case ('api')           { <app-docs-api /> }
+      @case ('demo')          { <app-docs-demo /> }
     }
   </main>
 </div>

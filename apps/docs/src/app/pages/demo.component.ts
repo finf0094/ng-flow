@@ -1,7 +1,7 @@
-import { Component, input } from '@angular/core';
-import { NgFlowComponent } from '@org/ng-flow';
+import { Component, input, signal } from '@angular/core';
+import { MarkerType, NgFlowComponent, BackgroundComponent, addEdge } from '@org/ng-flow';
 import { HandleComponent, Position } from '@org/ng-flow';
-import type { Node, Edge } from '@org/ng-flow';
+import type { Node, Edge, Connection, NodeMouseEvent } from '@org/ng-flow';
 
 interface WfData { icon: string; subtitle: string; color: string; }
 
@@ -46,32 +46,41 @@ class WfNodeComponent {
 @Component({
   selector: 'app-docs-demo',
   standalone: true,
-  imports: [NgFlowComponent],
+  imports: [NgFlowComponent, BackgroundComponent],
   template: `
     <div class="demo-layout">
       <div class="demo-header">
         <span class="demo-title">n8n-style Workflow Demo</span>
-        <span class="demo-hint">Drag nodes · Connect handles · Scroll to zoom · Right-click to deselect</span>
+        <span class="demo-hint">Drag nodes · Connect handles · Scroll to zoom</span>
+        <span class="demo-event">{{ lastEvent() }}</span>
       </div>
       <lib-ng-flow
         [nodes]="nodes"
-        [edges]="edges"
+        [edges]="edges()"
         [fitViewOnInit]="true"
+        [applyDefault]="false"
+        [snapGrid]="[16, 16]"
+        [snapToGrid]="true"
+        (nodeDoubleClick)="nodeDoubleClick($event)"
+        (connect)="onConnect($event)"
         style="height: calc(100vh - 120px)"
-      />
+      >
+        <lib-background variant="dots" [gap]="24" color="#1e2333" bgColor="#0a0c12" />
+      </lib-ng-flow>
     </div>
   `,
   styles: [`
     :host { display: block; height: 100%; }
     .demo-layout { display: flex; flex-direction: column; height: 100%; }
     .demo-header {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: center; gap: 16px;
       padding: 0 24px; height: 56px; min-height: 56px;
       background: #0d0f17; border-bottom: 1px solid #1e2333;
       flex-shrink: 0;
     }
     .demo-title { font-size: 15px; font-weight: 700; color: #f1f5f9; }
-    .demo-hint { font-size: 12px; color: #475569; }
+    .demo-hint { font-size: 12px; color: #475569; flex: 1; }
+    .demo-event { font-size: 12px; color: #6366f1; font-family: monospace; }
   `],
 })
 export class DemoComponent {
@@ -134,8 +143,8 @@ export class DemoComponent {
     },
   ];
 
-  readonly edges: Edge[] = [
-    { id: 'e-trigger-http', source: 'trigger', target: 'http',    type: 'smoothstep', animated: true, label: 'on POST' },
+  readonly edges = signal<Edge[]>([
+    { id: 'e-trigger-http', source: 'trigger', target: 'http',    type: 'default',    label: 'on POST', markerEnd: MarkerType.Arrow },
     { id: 'e-trigger-set',  source: 'trigger', target: 'set',     type: 'smoothstep', animated: true, label: 'on POST' },
     { id: 'e-http-if',      source: 'http',    target: 'if',      type: 'smoothstep', animated: true, label: 'data' },
     { id: 'e-set-if',       source: 'set',     target: 'if',      type: 'smoothstep', animated: true, label: 'fields' },
@@ -144,5 +153,25 @@ export class DemoComponent {
     { id: 'e-email-merge',  source: 'email',   target: 'merge',   type: 'smoothstep', animated: true },
     { id: 'e-db-merge',     source: 'db',      target: 'merge',   type: 'smoothstep', animated: true },
     { id: 'e-merge-respond',source: 'merge',   target: 'respond', type: 'smoothstep', animated: true },
-  ];
+  ]);
+
+  readonly lastEvent = signal('Drag from a handle to another to connect nodes');
+
+  onConnect(c: Connection): void {
+    const e: Edge = {
+      id: `e-${c.source}-${c.target}-${Date.now()}`,
+      source: c.source,
+      target: c.target,
+      sourceHandle: c.sourceHandle ?? undefined,
+      targetHandle: c.targetHandle ?? undefined,
+      type: 'smoothstep',
+      animated: true,
+    };
+    this.edges.update((prev) => addEdge(e, prev as any) as Edge[]);
+    this.lastEvent.set(`Connected: ${c.source} → ${c.target}`);
+  }
+
+  nodeDoubleClick(event: NodeMouseEvent) {
+    console.log('@nodeDblClick', event)
+  }
 }
