@@ -25,23 +25,23 @@ export function applyChanges<
     | EdgeRemoveChange
   )[];
 
+  let result = [...elements];
+
   for (const change of addRemoveChanges) {
     if (change.type === 'add') {
-      const index = elements.findIndex((el) => el.id === (change as NodeAddChange).item.id);
+      const index = result.findIndex((el) => el.id === (change as NodeAddChange).item.id);
       if (index === -1) {
-        elements.push((change as NodeAddChange).item as unknown as T);
+        result.push((change as NodeAddChange).item as unknown as T);
       }
     } else if (change.type === 'remove') {
-      const index = elements.findIndex((el) => el.id === (change as NodeRemoveChange).id);
-      if (index !== -1) {
-        elements.splice(index, 1);
-      }
+      result = result.filter((el) => el.id !== (change as NodeRemoveChange).id);
     }
   }
 
-  const elementIds = elements.map((el) => el.id);
+  return result.map((element) => {
+    let changed = false;
+    const updated = { ...element } as any;
 
-  for (const element of elements) {
     for (const currentChange of changes) {
       if ((currentChange as any).id !== element.id) {
         continue;
@@ -49,42 +49,48 @@ export function applyChanges<
 
       switch (currentChange.type) {
         case 'select':
-          element.selected = (currentChange as NodeSelectionChange).selected;
+          updated.selected = (currentChange as NodeSelectionChange).selected;
+          changed = true;
           break;
         case 'position':
-          if (isGraphNode(element as any)) {
+          if (isGraphNode(element)) {
             const posChange = currentChange as import('../types').NodePositionChange;
             if (typeof posChange.position !== 'undefined') {
-              (element as unknown as GraphNode).position = posChange.position;
+              updated.position = posChange.position;
+              changed = true;
             }
             if (typeof posChange.dragging !== 'undefined') {
-              (element as unknown as GraphNode).dragging = posChange.dragging!;
+              updated.dragging = posChange.dragging;
+              changed = true;
             }
           }
           break;
         case 'dimensions':
-          if (isGraphNode(element as any)) {
+          if (isGraphNode(element)) {
             const dimChange = currentChange as import('../types').NodeDimensionChange;
             if (typeof dimChange.dimensions !== 'undefined') {
-              (element as unknown as GraphNode).dimensions = dimChange.dimensions!;
+              updated.dimensions = dimChange.dimensions;
+              changed = true;
             }
             if (typeof dimChange.updateStyle !== 'undefined' && dimChange.updateStyle) {
-              (element as unknown as GraphNode).style = {
-                ...((element as unknown as GraphNode).style || {}),
+              updated.style = {
+                ...(updated.style || {}),
                 width: `${dimChange.dimensions?.width}px`,
                 height: `${dimChange.dimensions?.height}px`,
               };
+              changed = true;
             }
             if (typeof dimChange.resizing !== 'undefined') {
-              (element as unknown as GraphNode).resizing = dimChange.resizing!;
+              updated.resizing = dimChange.resizing;
+              changed = true;
             }
           }
           break;
       }
     }
-  }
 
-  return elements;
+    return changed ? (updated as T) : element;
+  });
 }
 
 export function applyEdgeChanges(changes: EdgeChange[], edges: GraphEdge[]): GraphEdge[] {

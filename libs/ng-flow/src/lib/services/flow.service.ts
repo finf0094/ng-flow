@@ -97,7 +97,11 @@ export class FlowService {
     new Map(),
   );
 
-  readonly nodeLookup: WritableSignal<NodeLookup> = signal(new Map());
+  readonly nodeLookup: Signal<NodeLookup> = computed(() => {
+    const map = new Map<string, GraphNode>();
+    this.nodes().forEach((n) => map.set(n.id, n));
+    return map;
+  });
   readonly edgeLookup: WritableSignal<EdgeLookup> = signal(new Map());
 
   readonly initialized: WritableSignal<boolean> = signal(false);
@@ -318,9 +322,6 @@ export class FlowService {
     const existing = this.nodeLookup();
     const parsed = nodes.map((n) => parseNode(n as Node, existing.get(n.id)));
     this.nodes.set(parsed);
-    const lookup = new Map<string, GraphNode>();
-    parsed.forEach((n) => lookup.set(n.id, n));
-    this.nodeLookup.set(lookup);
   }
 
   setEdges(edges: Edge[] | GraphEdge[]): void {
@@ -347,11 +348,6 @@ export class FlowService {
         (n) => !newNodes.some((nn) => nn.id === n.id),
       );
       return [...filtered, ...newNodes];
-    });
-    this.nodeLookup.update((prev) => {
-      const next = new Map(prev);
-      newNodes.forEach((n) => next.set(n.id, n));
-      return next;
     });
   }
 
@@ -381,11 +377,6 @@ export class FlowService {
   removeNodes(nodeIds: string[]): void {
     const idsSet = new Set(nodeIds);
     this.nodes.update((prev) => prev.filter((n) => !idsSet.has(n.id)));
-    this.nodeLookup.update((prev) => {
-      const next = new Map(prev);
-      idsSet.forEach((id) => next.delete(id));
-      return next;
-    });
     // also remove connected edges
     this.edges.update((prev) =>
       prev.filter((e) => !idsSet.has(e.source) && !idsSet.has(e.target)),
@@ -417,21 +408,6 @@ export class FlowService {
         return merged;
       }),
     );
-    this.nodeLookup.update((prev) => {
-      const node = prev.get(id);
-      if (node) {
-        const updated = { ...node, ...update };
-        if (update.position) {
-          updated.computedPosition = {
-            ...updated.computedPosition,
-            x: update.position.x,
-            y: update.position.y,
-          };
-        }
-        return new Map(prev).set(id, updated);
-      }
-      return prev;
-    });
   }
 
   updateEdge(id: string, update: Partial<GraphEdge>): void {
@@ -449,10 +425,6 @@ export class FlowService {
   }
 
   updateNodeDimensions(updates: UpdateNodeDimensionsParams[]): void {
-    const changedIds = new Map<
-      string,
-      { dims: Dimensions; handleBounds: import('../types').NodeHandleBounds }
-    >();
     const zoom = this.viewport().zoom || 1;
 
     this.nodes.update((prev) => {
@@ -478,24 +450,10 @@ export class FlowService {
         const nodeBounds = el.getBoundingClientRect();
         const hb = this._getHandleBoundsFromDOM(el, nodeBounds, zoom, node.id);
 
-        changedIds.set(node.id, { dims, handleBounds: hb });
         return { ...node, dimensions: dims, handleBounds: hb };
       });
       return changed ? next : prev;
     });
-
-    if (changedIds.size > 0) {
-      this.nodeLookup.update((prev) => {
-        const next = new Map(prev);
-        changedIds.forEach(({ dims, handleBounds }, id) => {
-          const node = next.get(id);
-          if (node) {
-            next.set(id, { ...node, dimensions: dims, handleBounds });
-          }
-        });
-        return next;
-      });
-    }
   }
 
   private _getHandleBoundsFromDOM(
@@ -552,11 +510,6 @@ export class FlowService {
     }
 
     this.nodes.set(updated);
-
-    // Rebuild nodeLookup so edge renderer and other consumers see updated dimensions/positions
-    const lookup = new Map<string, GraphNode>();
-    updated.forEach((n) => lookup.set(n.id, n));
-    this.nodeLookup.set(lookup);
 
     this.nodesChange$.next(changes);
   }
