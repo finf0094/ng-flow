@@ -1,6 +1,6 @@
 import { Component, signal, ViewChild } from '@angular/core';
-import { NgFlowComponent, PanelComponent } from '@org/ng-flow';
-import type { Node, Edge, Connection, NodeMouseEvent } from '@org/ng-flow';
+import type { Connection, Edge, Node, NodeMouseEvent } from '@org/ng-flow';
+import { MarkerType, NgFlowComponent, PanelComponent } from '@org/ng-flow';
 import { WorkflowNodeComponent } from './workflow-node.component';
 
 @Component({
@@ -25,7 +25,11 @@ export class App {
       position: { x: 360, y: 120 },
       label: 'HTTP Request',
       template: WorkflowNodeComponent,
-      data: { icon: '🌐', subtitle: 'GET https://api.example.com/users', color: '#6366f1' },
+      data: {
+        icon: '🌐',
+        subtitle: 'GET https://api.example.com/users',
+        color: '#6366f1',
+      },
     },
     {
       id: 'transform',
@@ -46,7 +50,11 @@ export class App {
       position: { x: 960, y: 100 },
       label: 'Send Email',
       template: WorkflowNodeComponent,
-      data: { icon: '📧', subtitle: 'SMTP · notify@company.com', color: '#3b82f6' },
+      data: {
+        icon: '📧',
+        subtitle: 'SMTP · notify@company.com',
+        color: '#3b82f6',
+      },
     },
     {
       id: 'log',
@@ -60,19 +68,53 @@ export class App {
       position: { x: 1240, y: 220 },
       label: 'Respond',
       template: WorkflowNodeComponent,
-      data: { icon: '✅', subtitle: '200 OK · {"status":"done"}', color: '#10b981' },
+      data: {
+        icon: '✅',
+        subtitle: '200 OK · {"status":"done"}',
+        color: '#10b981',
+      },
     },
   ];
 
   readonly initialEdges: Edge[] = [
-    { id: 'e-t-h',  source: 'trigger',   target: 'http',      type: 'default', animated: true  },
-    { id: 'e-t-tr', source: 'trigger',   target: 'transform', type: 'smoothstep', animated: true  },
-    { id: 'e-h-c',  source: 'http',      target: 'condition', type: 'smoothstep'                  },
-    { id: 'e-tr-c', source: 'transform', target: 'condition', type: 'smoothstep'                  },
-    { id: 'e-c-n',  source: 'condition', target: 'notify',    type: 'smoothstep', label: 'true'   },
-    { id: 'e-c-l',  source: 'condition', target: 'log',       type: 'smoothstep', label: 'false'  },
-    { id: 'e-n-e',  source: 'notify',    target: 'end',       type: 'smoothstep'                  },
-    { id: 'e-l-e',  source: 'log',       target: 'end',       type: 'smoothstep'                  },
+    {
+      id: 'e-t-h',
+      source: 'trigger',
+      target: 'http',
+      type: 'default',
+      animated: true,
+      markerEnd: MarkerType.ArrowClosed,
+    },
+    {
+      id: 'e-t-tr',
+      source: 'trigger',
+      target: 'transform',
+      type: 'smoothstep',
+      animated: true,
+    },
+    { id: 'e-h-c', source: 'http', target: 'condition', type: 'smoothstep' },
+    {
+      id: 'e-tr-c',
+      source: 'transform',
+      target: 'condition',
+      type: 'smoothstep',
+    },
+    {
+      id: 'e-c-n',
+      source: 'condition',
+      target: 'notify',
+      type: 'smoothstep',
+      label: 'true',
+    },
+    {
+      id: 'e-c-l',
+      source: 'condition',
+      target: 'log',
+      type: 'smoothstep',
+      label: 'false',
+    },
+    { id: 'e-n-e', source: 'notify', target: 'end', type: 'smoothstep' },
+    { id: 'e-l-e', source: 'log', target: 'end', type: 'smoothstep' },
   ];
 
   lastEvent = signal<string>('Click a node or connect handles');

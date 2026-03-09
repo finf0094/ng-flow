@@ -21,34 +21,54 @@ interface ResolvedMarker {
   imports: [CommonModule],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
-    <defs>
-      @for (marker of _markers(); track marker.id) {
-        <marker
-          [attr.id]="marker.id"
-          [attr.markerWidth]="marker.width"
-          [attr.markerHeight]="marker.height"
-          [attr.viewBox]="-1 + ' -1 ' + (marker.width + 2) + ' ' + (marker.height + 2)"
-          [attr.markerUnits]="marker.markerUnits"
-          [attr.orient]="marker.orient"
-          [attr.refX]="marker.width / 2"
-          [attr.refY]="marker.height / 2"
-        >
-          @if (marker.type === 'arrowclosed' || marker.type === 'arrow') {
-            <polyline
-              [attr.points]="marker.type === 'arrowclosed'
-                ? '0 0, ' + marker.width + ' ' + (marker.height / 2) + ', 0 ' + marker.height + ', 0 0'
-                : '0 0, ' + marker.width + ' ' + (marker.height / 2) + ', 0 ' + marker.height"
-              [attr.stroke]="marker.color"
-              [attr.fill]="marker.type === 'arrowclosed' ? marker.color : 'none'"
-              [attr.stroke-width]="marker.strokeWidth ?? 1"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          }
-        </marker>
-      }
-    </defs>
+    <svg class="vue-flow__marker vue-flow__container" aria-hidden="true">
+      <defs>
+        @for (marker of _markers(); track marker.id) {
+          <marker
+            [attr.id]="marker.id"
+            class="vue-flow__arrowhead"
+            viewBox="-10 -10 20 20"
+            refX="5"
+            refY="0"
+            [attr.markerWidth]="marker.width"
+            [attr.markerHeight]="marker.height"
+            [attr.markerUnits]="marker.markerUnits"
+            [attr.orient]="marker.orient"
+          >
+            @if (marker.type === 'arrowclosed') {
+              <polyline
+                points="-5,-4 0,0 -5,4 -5,-4"
+                [ngStyle]="{ stroke: marker.color, fill: marker.color, 'stroke-width': marker.strokeWidth ?? 1 }"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            }
+            @if (marker.type === 'arrow') {
+              <polyline
+                points="-5,-4 0,0 -5,4"
+                [ngStyle]="{ stroke: marker.color, 'stroke-width': marker.strokeWidth ?? 1 }"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            }
+          </marker>
+        }
+      </defs>
+    </svg>
   `,
+  styles: [`
+    :host { display: contents; }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+  `],
 })
 export class MarkerDefsComponent {
   private readonly flow = inject(FlowService);

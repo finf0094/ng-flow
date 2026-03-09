@@ -25,8 +25,8 @@ interface ResolvedEdge {
   standalone: true,
   imports: [CommonModule, MarkerDefsComponent],
   template: `
+    <lib-marker-defs />
     <svg class="vue-flow__edges vue-flow__container">
-      <lib-marker-defs />
       @for (re of _resolvedEdges(); track re.edge.id) {
         <g
           class="vue-flow__edge"
