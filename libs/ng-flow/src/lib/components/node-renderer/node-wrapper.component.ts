@@ -225,7 +225,7 @@ export class NodeWrapperComponent implements OnInit, OnDestroy {
 
     this._isDragging = false;
     this._dragStartPos = { x: event.clientX, y: event.clientY };
-    this._nodeStartPos = { x: node.position.x, y: node.position.y };
+    this._nodeStartPos = { x: node.computedPosition.x, y: node.computedPosition.y };
 
     if (this._isSelectable() && !node.selected) {
       const multi = event.ctrlKey || event.metaKey || event.shiftKey;

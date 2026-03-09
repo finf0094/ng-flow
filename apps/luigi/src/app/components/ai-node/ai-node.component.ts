@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { HandleComponent, Position } from '@org/ng-flow';
 import { LucideAngularModule } from '../../icons';
+import { NodeToolbarComponent } from '../node-toolbar/node-toolbar.component';
 
 export interface AiNodeData {
   icon: string;
@@ -13,8 +14,10 @@ export interface AiNodeData {
 @Component({
   selector: 'app-ai-node',
   standalone: true,
-  imports: [HandleComponent, LucideAngularModule],
+  imports: [HandleComponent, LucideAngularModule, NodeToolbarComponent],
   template: `
+    <app-node-toolbar [nodeId]="id()" nodeType="ai" class="nodrag nopan toolbar" />
+
     <lib-handle type="target" [position]="Position.Left" />
 
     <div
@@ -47,6 +50,9 @@ export interface AiNodeData {
         display: block;
         position: relative;
       }
+
+      .toolbar { display: none; }
+      :host:hover .toolbar { display: flex; }
 
       .node {
         width: 100px;

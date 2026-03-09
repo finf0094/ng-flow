@@ -23,15 +23,15 @@ import { clamp, wheelDelta } from '../../utils';
   imports: [CommonModule, PaneComponent],
   template: `
     <div #viewportEl class="vue-flow__viewport vue-flow__container">
-      <div
-        class="vue-flow__transformationpane vue-flow__container"
-        [style.transform]="_transformStyle()"
-      >
-        <ng-content />
-      </div>
+      <lib-pane>
+        <div
+          class="vue-flow__transformationpane vue-flow__container"
+          [style.transform]="_transformStyle()"
+        >
+          <ng-content />
+        </div>
+      </lib-pane>
     </div>
-    <lib-pane>
-    </lib-pane>
   `,
 })
 export class ViewportComponent implements AfterViewInit, OnDestroy {

@@ -31,4 +31,5 @@ export const ICON_PATHS: Record<string, string> = {
   'chevron-down': '<path d="m6 9 6 6 6-6"/>',
   'layout-grid': '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
   'filter': '<path d="M2 5h20"/><path d="M6 12h12"/><path d="M9 19h6"/>',
+  'trash-2': '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6z"/><path d="M10 11v6"/><path d="M14 11v6"/>',
 };

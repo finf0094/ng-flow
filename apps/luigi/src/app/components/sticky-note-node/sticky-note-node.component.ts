@@ -8,6 +8,7 @@ import {
   output,
 } from '@angular/core';
 import { NodeResizerComponent } from '@org/ng-flow';
+import { NodeToolbarComponent } from '../node-toolbar/node-toolbar.component';
 
 export interface StickyNoteData {
   text: string;
@@ -26,8 +27,16 @@ const COLOR_KEYS = ['yellow', 'pink', 'blue', 'green'] as const;
 @Component({
   selector: 'app-sticky-note-node',
   standalone: true,
-  imports: [NodeResizerComponent],
+  imports: [NodeResizerComponent, NodeToolbarComponent],
   template: `
+    <app-node-toolbar
+      [nodeId]="id()"
+      nodeType="sticky"
+      [color]="data().color ?? 'yellow'"
+      (colorChange)="setColor($any($event))"
+      class="nodrag nopan toolbar"
+    />
+
     <lib-node-resizer
       color="#6366f1"
       [isVisible]="selected() || resizing()"
@@ -80,6 +89,9 @@ const COLOR_KEYS = ['yellow', 'pink', 'blue', 'green'] as const;
         min-width: 150px;
         min-height: 80px;
       }
+
+      .toolbar { display: none; }
+      :host:hover .toolbar { display: flex; }
 
       .sticky {
         width: 100%;

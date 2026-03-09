@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FlowService } from '../../services/flow.service';
 import { SelectionRectComponent } from './selection-rect.component';
 import { SelectionMode } from '../../types';
+import type { EdgeChange } from '../../types';
 import { createSelectionChange } from '../../utils/changes';
 import { getNodesInside } from '../../utils';
 
@@ -42,6 +43,10 @@ export class PaneComponent {
 
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent): void {
+    // Only handle clicks directly on the pane element (not on child nodes/edges)
+    // This matches vue-flow's wrapHandler pattern
+    if (event.target !== this.el.nativeElement) return;
+
     const dx = Math.abs(event.clientX - this._mouseDownPos.x);
     const dy = Math.abs(event.clientY - this._mouseDownPos.y);
     if (dx <= this.flow.paneClickDistance() && dy <= this.flow.paneClickDistance()) {
@@ -49,6 +54,14 @@ export class PaneComponent {
         .filter((n) => n.selected)
         .map((n) => createSelectionChange(n.id, false));
       if (deselect.length) this.flow.applyNodeChanges(deselect);
+
+      const deselectEdges = this.flow.edges()
+        .filter((e) => e.selected)
+        .map((e) => createSelectionChange(e.id, false) as EdgeChange);
+      if (deselectEdges.length) this.flow.applyEdgeChanges(deselectEdges);
+
+      this.flow.nodesSelectionActive.set(false);
+
       this.flow.paneClick$.next(event);
     }
   }

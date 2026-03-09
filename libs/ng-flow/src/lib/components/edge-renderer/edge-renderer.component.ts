@@ -5,6 +5,7 @@ import { MarkerDefsComponent } from './marker-defs.component';
 import type { GraphEdge, GraphNode } from '../../types';
 import { Position } from '../../types';
 import { getMarkerId } from '../../utils';
+import { createSelectionChange } from '../../utils/changes';
 import { getBezierPath } from '../../utils/edges/bezier';
 import { getStraightPath } from '../../utils/edges/straight';
 import { getStepPath, getSmoothStepPath } from '../../utils/edges/smooth-step';
@@ -203,12 +204,16 @@ export class EdgeRendererComponent {
   _onEdgeClick(event: MouseEvent, edge: GraphEdge): void {
     if (this.flow.elementsSelectable()) {
       const multi = event.ctrlKey || event.metaKey || event.shiftKey;
+      const changes: import('../../types').EdgeChange[] = [];
       if (!multi) {
         this.flow.edges().forEach((e) => {
-          if (e.id !== edge.id && e.selected) this.flow.updateEdge(e.id, { selected: false });
+          if (e.id !== edge.id && e.selected) {
+            changes.push(createSelectionChange(e.id, false));
+          }
         });
       }
-      this.flow.updateEdge(edge.id, { selected: !edge.selected });
+      changes.push(createSelectionChange(edge.id, !edge.selected));
+      this.flow.applyEdgeChanges(changes);
     }
     this.flow.edgeClick$.next({ event, edge });
   }

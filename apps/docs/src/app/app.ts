@@ -10,6 +10,7 @@ import { NodeResizerPageComponent } from './pages/node-resizer.component';
 import { ViewportPageComponent } from './pages/viewport.component';
 import { ApiReferenceComponent } from './pages/api-reference.component';
 import { DemoComponent } from './pages/demo.component';
+import { CustomizationComponent } from './pages/customization.component';
 
 type PageId =
   | 'intro'
@@ -21,6 +22,7 @@ type PageId =
   | 'node-resizer'
   | 'viewport'
   | 'api'
+  | 'customization'
   | 'demo';
 
 interface NavItem {
@@ -43,6 +45,7 @@ interface NavItem {
     NodeResizerPageComponent,
     ViewportPageComponent,
     ApiReferenceComponent,
+    CustomizationComponent,
     DemoComponent,
   ],
   templateUrl: './app.html',
@@ -61,6 +64,7 @@ export class App {
     { id: 'node-resizer',  label: 'Node Resizer',    icon: '⤡' },
     { id: 'viewport',      label: 'Viewport',        icon: '⊞' },
     { id: 'api',           label: 'API Reference',   icon: '📖' },
+    { id: 'customization', label: 'Customization',   icon: '🎨' },
     { id: 'demo',          label: 'Live Demo',       icon: '✦' },
   ];
 

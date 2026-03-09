@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { HandleComponent, Position } from '@org/ng-flow';
 import { LucideAngularModule } from '../../icons';
+import { NodeToolbarComponent } from '../node-toolbar/node-toolbar.component';
 
 export interface CanvasNodeData {
   icon: string;
@@ -14,8 +15,10 @@ export interface CanvasNodeData {
 @Component({
   selector: 'app-canvas-node',
   standalone: true,
-  imports: [HandleComponent, LucideAngularModule],
+  imports: [HandleComponent, LucideAngularModule, NodeToolbarComponent],
   template: `
+    <app-node-toolbar [nodeId]="id()" nodeType="canvas" class="nodrag nopan toolbar" />
+
     @if (data().type !== 'trigger') {
       <lib-handle type="target" [position]="Position.Left" />
     }
@@ -43,12 +46,14 @@ export interface CanvasNodeData {
     </div>
 
     @if (data().outputs === 2) {
+      <span class="branch-label" style="top: 35%">true</span>
       <lib-handle
         type="source"
         [position]="Position.Right"
         id="true"
         style="top: 35%"
       />
+      <span class="branch-label" style="top: 65%">false</span>
       <lib-handle
         type="source"
         [position]="Position.Right"
@@ -176,6 +181,22 @@ export interface CanvasNodeData {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      .toolbar { display: none; }
+      :host:hover .toolbar { display: flex; }
+
+      .branch-label {
+        position: absolute;
+        left: calc(100% + 8px);
+        transform: translateY(-50%);
+        font-size: 8px;
+        font-weight: 600;
+        color: #6b7280;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        pointer-events: none;
+        white-space: nowrap;
       }
     `,
   ],

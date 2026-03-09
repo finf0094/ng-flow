@@ -30,7 +30,7 @@ body {
 
 .vue-flow__handle.source:hover,
 .vue-flow__handle--connecting {
-  transform: scale(1.5) !important;
+  transform: translate(0, -50%) scale(1.5) !important;
   border-color: #818cf8 !important;
   background: #1e2030 !important;
 }

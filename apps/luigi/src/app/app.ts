@@ -3,6 +3,7 @@ import {
   NgFlowComponent,
   BackgroundComponent,
   ConnectionMode,
+  MarkerType,
   type NodeChange,
   type EdgeChange,
   type Connection,
@@ -28,6 +29,9 @@ import { LucideAngularModule } from './icons';
 export class App {
   readonly workflow = inject(WorkflowService);
   readonly ConnectionMode = ConnectionMode;
+  readonly connLineOptions = {
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1', width: 20, height: 20 },
+  };
 
   onInit(fs: FlowService): void {
     this.workflow.setFlowService(fs);

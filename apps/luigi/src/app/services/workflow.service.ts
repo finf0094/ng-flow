@@ -164,4 +164,14 @@ export class WorkflowService {
       ns.map((n) => (n.id === nodeId ? { ...n, data } : n)),
     );
   }
+
+  removeNode(id: string): void {
+    this.nodes.update((ns) => ns.filter((n) => n.id !== id));
+    this.edges.update((es) => es.filter((e) => e.source !== id && e.target !== id));
+    this.selectedNodeIds.update((ids) => ids.filter((i) => i !== id));
+  }
+
+  openPalette(): void {
+    this.paletteOpen.set(true);
+  }
 }
