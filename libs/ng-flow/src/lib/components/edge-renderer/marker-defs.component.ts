@@ -57,41 +57,50 @@ export class MarkerDefsComponent {
     const edges = this.flow.edges();
     const defaultColor = this.flow.defaultMarkerColor();
     const flowId = this.flow.id();
+    const connOpts = this.flow.connectionLineOptions();
     const seen = new Set<string>();
     const markers: ResolvedMarker[] = [];
 
-    for (const edge of edges) {
-      for (const markerProp of [edge.markerStart, edge.markerEnd]) {
-        if (!markerProp) continue;
+    const addMarker = (markerProp: any) => {
+      if (!markerProp) return;
 
-        let type: string;
-        let color = defaultColor;
-        let width = 12.5;
-        let height = 12.5;
-        let markerUnits = 'strokeWidth';
-        let orient = 'auto-start-reverse';
-        let strokeWidth: number | undefined;
+      let type: string;
+      let color = defaultColor;
+      let width = 12.5;
+      let height = 12.5;
+      let markerUnits = 'strokeWidth';
+      let orient = 'auto-start-reverse';
+      let strokeWidth: number | undefined;
 
-        if (typeof markerProp === 'string') {
-          type = markerProp;
-        } else if (typeof markerProp === 'object') {
-          type = (markerProp as any).type ?? MarkerType.Arrow;
-          color = (markerProp as any).color ?? defaultColor;
-          width = (markerProp as any).width ?? 12.5;
-          height = (markerProp as any).height ?? 12.5;
-          markerUnits = (markerProp as any).markerUnits ?? 'strokeWidth';
-          orient = (markerProp as any).orient ?? 'auto-start-reverse';
-          strokeWidth = (markerProp as any).strokeWidth;
-        } else {
-          type = markerProp;
-        }
-
-        const id = getMarkerId(markerProp, flowId);
-        if (seen.has(id)) continue;
-        seen.add(id);
-
-        markers.push({ id, type, color, width, height, markerUnits, orient, strokeWidth });
+      if (typeof markerProp === 'string') {
+        type = markerProp;
+      } else if (typeof markerProp === 'object') {
+        type = (markerProp as any).type ?? MarkerType.Arrow;
+        color = (markerProp as any).color ?? defaultColor;
+        width = (markerProp as any).width ?? 12.5;
+        height = (markerProp as any).height ?? 12.5;
+        markerUnits = (markerProp as any).markerUnits ?? 'strokeWidth';
+        orient = (markerProp as any).orient ?? 'auto-start-reverse';
+        strokeWidth = (markerProp as any).strokeWidth;
+      } else {
+        type = markerProp;
       }
+
+      const id = getMarkerId(markerProp, flowId);
+      if (seen.has(id)) return;
+      seen.add(id);
+
+      markers.push({ id, type, color, width, height, markerUnits, orient, strokeWidth });
+    };
+
+    // Connection line markers first (same order as vue-flow MarkerDefinitions)
+    addMarker(connOpts.markerEnd);
+    addMarker(connOpts.markerStart);
+
+    // Edge markers
+    for (const edge of edges) {
+      addMarker(edge.markerStart);
+      addMarker(edge.markerEnd);
     }
 
     return markers;

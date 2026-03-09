@@ -10,8 +10,14 @@ import {
 import { CommonModule } from '@angular/common';
 import { FlowService } from '../../services/flow.service';
 import { NODE_ID_TOKEN } from '../nodes/node-id.token';
-import type { HandleConnectable, HandleType, ValidConnectionFunc } from '../../types';
+import type { Connection, HandleConnectable, HandleElement, HandleType, ValidConnectionFunc, XYPosition } from '../../types';
 import { Position } from '../../types';
+import {
+  getClosestHandle,
+  isValidHandle,
+  getConnectionStatus,
+  resetRecentHandle,
+} from '../../utils/handle';
 
 @Component({
   selector: 'lib-handle',
@@ -19,7 +25,7 @@ import { Position } from '../../types';
   imports: [CommonModule],
   template: `<ng-content />`,
   host: {
-    'class': 'vue-flow__handle',
+    'class': 'vue-flow__handle nodrag nopan',
     '[class.source]': 'type() === "source"',
     '[class.target]': 'type() === "target"',
     '[class.left]': 'position() === "left"',
@@ -48,6 +54,8 @@ export class HandleComponent {
   private readonly flow = inject(FlowService);
   readonly _nodeId = inject(NODE_ID_TOKEN, { optional: true }) ?? '';
   private readonly el = inject(ElementRef<HTMLDivElement>);
+
+  // ─── computed state ──────────────────────────────────────────
 
   _isConnecting = computed(() => {
     const startHandle = this.flow.connectionStartHandle();
@@ -105,11 +113,15 @@ export class HandleComponent {
     return true;
   });
 
+  // ─── lifecycle ───────────────────────────────────────────────
+
   constructor() {
     afterNextRender(() => {
       this._updateHandleBounds();
     });
   }
+
+  // ─── handle bounds registration ─────────────────────────────
 
   private _updateHandleBounds(): void {
     const el = this.el.nativeElement as HTMLElement;
@@ -119,10 +131,6 @@ export class HandleComponent {
     const nodeId = this._nodeId;
     if (!nodeId) return;
 
-    // Use getBoundingClientRect so CSS transforms on handles (e.g. translate(-50%, 0))
-    // are properly accounted for.  The rects are in screen-pixels which include the
-    // viewport zoom (scale), so divide by zoom to get flow-coordinates consistent
-    // with node.dimensions (offsetWidth/offsetHeight, not affected by zoom).
     const zoom = this.flow.viewport().zoom || 1;
     const nodeRect = nodeEl.getBoundingClientRect();
     const handleRect = el.getBoundingClientRect();
@@ -151,90 +159,167 @@ export class HandleComponent {
     if (type === 'source') {
       const existing = bounds.source || [];
       const idx = existing.findIndex((h) => h.id === handleId);
-      if (idx >= 0) {
-        existing[idx] = handleEl;
-      } else {
-        existing.push(handleEl);
-      }
+      if (idx >= 0) existing[idx] = handleEl;
+      else existing.push(handleEl);
       bounds.source = existing;
     } else {
       const existing = bounds.target || [];
       const idx = existing.findIndex((h) => h.id === handleId);
-      if (idx >= 0) {
-        existing[idx] = handleEl;
-      } else {
-        existing.push(handleEl);
-      }
+      if (idx >= 0) existing[idx] = handleEl;
+      else existing.push(handleEl);
       bounds.target = existing;
     }
 
     this.flow.updateNode(nodeId, { handleBounds: bounds });
   }
 
+  // ─── event listeners ────────────────────────────────────────
+
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent): void {
-    if (!this.connectableStart()) return;
-    if (!this._isConnectable()) return;
-    this._startConnection(event);
+    event.stopPropagation();
+    if (!this.connectableStart() || !this._isConnectable()) return;
+    this._handlePointerDown(event);
   }
 
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent): void {
     if (!this.flow.connectOnClick()) return;
-
-    const clickStart = this.flow.connectionClickStartHandle();
-    if (clickStart) {
-      this._completeClickConnection(event);
-    } else {
-      this._startClickConnection(event);
-    }
+    this._handleClick(event);
   }
 
-  private _startConnection(event: MouseEvent): void {
+  // ─── pointer-down (drag connection) ─────────────────────────
+  // Mirrors vue-flow useHandle → handlePointerDown
+
+  private _handlePointerDown(event: MouseEvent): void {
     if (!this._nodeId) return;
 
-    const flowRef = this.flow.flowRef;
-    const vp = this.flow.viewport();
-    let hx = 0;
-    let hy = 0;
-    if (flowRef) {
-      const rect = flowRef.getBoundingClientRect();
-      const handleRect = (this.el.nativeElement as HTMLElement).getBoundingClientRect();
-      hx = (handleRect.left + handleRect.width / 2 - rect.left - vp.x) / vp.zoom;
-      hy = (handleRect.top + handleRect.height / 2 - rect.top - vp.y) / vp.zoom;
-    }
+    const fromNodeId = this._nodeId;
+    const fromHandleId = this.id() ?? null;
+    const fromType = this.type();
 
+    const fromHandle: { nodeId: string; type: HandleType; id: string | null } = {
+      nodeId: fromNodeId,
+      type: fromType,
+      id: fromHandleId,
+    };
+
+    // Set start handle
     this.flow.connectionStartHandle.set({
-      nodeId: this._nodeId,
-      type: this.type(),
-      id: this.id() ?? null,
+      nodeId: fromNodeId,
+      type: fromType,
+      id: fromHandleId,
       position: this.position(),
-      x: hx,
-      y: hy,
+      x: 0,
+      y: 0,
     });
 
     this.flow.connectStart$.next({
       event,
-      nodeId: this._nodeId,
-      handleId: this.id() ?? null,
-      handleType: this.type(),
+      nodeId: fromNodeId,
+      handleId: fromHandleId,
+      handleType: fromType,
     });
 
-    const onMouseMove = (e: MouseEvent) => {
+    let closestHandle: HandleElement | null = null;
+    let connection: Connection | null = null;
+    let isValid: boolean | null = false;
+    let prevActiveHandle: Element | null = null;
+
+    const onPointerMove = (e: MouseEvent) => {
       const flowRef = this.flow.flowRef;
       if (!flowRef) return;
       const rect = flowRef.getBoundingClientRect();
       const vp = this.flow.viewport();
-      this.flow.connectionPosition.set({
+
+      // Mouse in flow-coordinates
+      const mouseFlow: XYPosition = {
         x: (e.clientX - rect.left - vp.x) / vp.zoom,
         y: (e.clientY - rect.top - vp.y) / vp.zoom,
+      };
+
+      // Find closest handle
+      closestHandle = getClosestHandle(
+        mouseFlow,
+        this.flow.connectionRadius(),
+        this.flow.nodeLookup(),
+        fromHandle,
+      );
+
+      // Validate
+      const result = isValidHandle({
+        handle: closestHandle,
+        connectionMode: this.flow.connectionMode(),
+        fromNodeId,
+        fromHandleId,
+        fromType,
+        isValidConnection: this.isValidConnection() ?? this.flow.isValidConnection(),
+        nodeLookup: this.flow.nodeLookup(),
+        edges: this.flow.edges(),
       });
+
+      connection = result.connection;
+      isValid = !!closestHandle && result.isValid;
+
+      // Update connection state (mirrors vue-flow updateConnection)
+      if (closestHandle && isValid) {
+        // Snap to handle position
+        this.flow.connectionPosition.set({ x: closestHandle.x, y: closestHandle.y });
+        this.flow.connectionEndHandle.set({
+          nodeId: closestHandle.nodeId,
+          type: closestHandle.type,
+          id: closestHandle.id ?? null,
+          position: closestHandle.position,
+          x: 0,
+          y: 0,
+        });
+      } else {
+        // Free cursor tracking
+        this.flow.connectionPosition.set(mouseFlow);
+        this.flow.connectionEndHandle.set(null);
+      }
+
+      this.flow.connectionStatus.set(
+        getConnectionStatus(!!closestHandle, isValid),
+      );
+
+      // CSS feedback on target handle
+      if (!closestHandle || !isValid) {
+        resetRecentHandle(prevActiveHandle);
+        prevActiveHandle = null;
+        return;
+      }
+
+      if (connection && connection.source !== connection.target) {
+        const handleDom =
+          flowRef.querySelector(
+            `.vue-flow__handle[data-nodeid="${closestHandle.nodeId}"][data-handleid="${closestHandle.id ?? ''}"]`,
+          ) ??
+          flowRef.querySelector(
+            `.vue-flow__handle[data-nodeid="${closestHandle.nodeId}"].${closestHandle.type}`,
+          );
+
+        if (handleDom && handleDom !== prevActiveHandle) {
+          resetRecentHandle(prevActiveHandle);
+          prevActiveHandle = handleDom;
+          handleDom.classList.add('connecting', 'vue-flow__handle-connecting');
+          handleDom.classList.toggle('valid', !!isValid);
+          handleDom.classList.toggle('vue-flow__handle-valid', !!isValid);
+        }
+      }
     };
 
-    const onMouseUp = (e: MouseEvent) => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+    const onPointerUp = (e: MouseEvent) => {
+      document.removeEventListener('mousemove', onPointerMove);
+      document.removeEventListener('mouseup', onPointerUp);
 
+      // Emit connection if valid
+      if ((closestHandle) && connection && isValid) {
+        this.flow.connect$.next(connection);
+      }
+
+      // Clean up (mirrors vue-flow endConnection)
+      resetRecentHandle(prevActiveHandle);
       this.flow.connectionStartHandle.set(null);
       this.flow.connectionEndHandle.set(null);
       this.flow.connectionStatus.set(null);
@@ -243,42 +328,67 @@ export class HandleComponent {
       this.flow.connectEnd$.next(e);
     };
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('mousemove', onPointerMove);
+    document.addEventListener('mouseup', onPointerUp);
   }
 
-  private _startClickConnection(event: MouseEvent): void {
+  // ─── click connection ───────────────────────────────────────
+  // Mirrors vue-flow useHandle → handleClick
+
+  private _handleClick(event: MouseEvent): void {
+    const clickStart = this.flow.connectionClickStartHandle();
+
+    if (!clickStart) {
+      // Start click-connection
+      if (!this._nodeId) return;
+
+      this.flow.connectionClickStartHandle.set({
+        nodeId: this._nodeId,
+        type: this.type(),
+        id: this.id() ?? null,
+        position: this.position(),
+        x: 0,
+        y: 0,
+      });
+
+      this.flow.clickConnectStart$.next({
+        event,
+        nodeId: this._nodeId,
+        handleId: this.id() ?? null,
+        handleType: this.type(),
+      });
+      return;
+    }
+
+    // Complete click-connection
     if (!this._nodeId) return;
 
-    this.flow.connectionClickStartHandle.set({
-      nodeId: this._nodeId,
-      type: this.type(),
-      id: this.id() ?? null,
-      position: this.position(),
-      x: 0,
-      y: 0,
+    const result = isValidHandle({
+      handle: {
+        nodeId: this._nodeId,
+        id: this.id() ?? null,
+        type: this.type(),
+        position: this.position(),
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      },
+      connectionMode: this.flow.connectionMode(),
+      fromNodeId: clickStart.nodeId,
+      fromHandleId: clickStart.id ?? null,
+      fromType: clickStart.type,
+      isValidConnection: this.isValidConnection() ?? this.flow.isValidConnection(),
+      nodeLookup: this.flow.nodeLookup(),
+      edges: this.flow.edges(),
     });
 
-    this.flow.clickConnectStart$.next({
-      event,
-      nodeId: this._nodeId,
-      handleId: this.id() ?? null,
-      handleType: this.type(),
-    });
-  }
-
-  private _completeClickConnection(event: MouseEvent): void {
-    const clickStart = this.flow.connectionClickStartHandle();
-    if (!clickStart || !this._nodeId) return;
-
-    if (this.connectableEnd()) {
-      const connection = {
-        source: clickStart.nodeId,
-        sourceHandle: clickStart.id ?? null,
-        target: this._nodeId,
-        targetHandle: this.id() ?? null,
-      };
-      this.flow.connect$.next(connection);
+    if (result.isValid && result.connection) {
+      const isOwnHandle =
+        result.connection.source === result.connection.target;
+      if (!isOwnHandle) {
+        this.flow.connect$.next(result.connection);
+      }
     }
 
     this.flow.connectionClickStartHandle.set(null);

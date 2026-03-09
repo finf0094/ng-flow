@@ -17,6 +17,7 @@ import { FlowService } from '../../services/flow.service';
 import { ViewportComponent } from '../viewport/viewport.component';
 import { NodeRendererComponent } from '../node-renderer/node-renderer.component';
 import { EdgeRendererComponent } from '../edge-renderer/edge-renderer.component';
+import { ConnectionLineComponent } from '../pane/connection-line.component';
 import { PanOnScrollMode, ConnectionMode, SelectionMode } from '../../types';
 import type {
   Connection,
@@ -56,12 +57,15 @@ import type {
     ViewportComponent,
     NodeRendererComponent,
     EdgeRendererComponent,
+    ConnectionLineComponent,
   ],
   providers: [FlowService],
   templateUrl: './ng-flow.component.html',
   styleUrl: './ng-flow.component.css',
 })
-export class NgFlowComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+export class NgFlowComponent
+  implements OnInit, AfterViewInit, OnChanges, OnDestroy
+{
   // ---- inputs (mirrors FlowProps) ----
   readonly id = input<string | undefined>(undefined);
   readonly nodes = input<Node[]>([]);

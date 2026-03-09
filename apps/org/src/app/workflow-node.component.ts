@@ -1,10 +1,7 @@
 import { Component, input } from '@angular/core';
 import {
   HandleComponent,
-  NodeResizerComponent,
   Position,
-  ResizeParams,
-  ResizeParamsWithDirection,
 } from '@org/ng-flow';
 
 export interface WorkflowNodeData {
@@ -16,14 +13,8 @@ export interface WorkflowNodeData {
 @Component({
   selector: 'app-workflow-node',
   standalone: true,
-  imports: [HandleComponent, NodeResizerComponent],
+  imports: [HandleComponent],
   template: `
-    <lib-node-resizer
-      (resize)="resize($event.params)"
-      (resizeStart)="resizeStart($event.params)"
-      (resizeEnd)="resizeEnd($event.params)"
-      [isVisible]="true"
-    />
     <lib-handle [type]="'target'" [position]="Position.Left" />
 
     <div class="wf-node" [style.--accent]="data().color">
@@ -106,14 +97,4 @@ export class WorkflowNodeComponent {
     color: '#6366f1',
   });
   readonly selected = input<boolean>(false);
-
-  resize(event: ResizeParamsWithDirection) {
-    // console.log('Resizing node', this.id(), event);
-  }
-  resizeStart(event: ResizeParams) {
-    // console.log('Started resizing node', this.id(), event);
-  }
-  resizeEnd(event: ResizeParams) {
-    // console.log('Finished resizing node', this.id(), event);
-  }
 }

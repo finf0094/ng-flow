@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FlowService } from '../../services/flow.service';
-import { ConnectionLineComponent } from './connection-line.component';
 import { SelectionRectComponent } from './selection-rect.component';
 import { SelectionMode } from '../../types';
 import { getNodesInside } from '../../utils';
@@ -15,9 +14,8 @@ import { getNodesInside } from '../../utils';
 @Component({
   selector: 'lib-pane',
   standalone: true,
-  imports: [CommonModule, ConnectionLineComponent, SelectionRectComponent],
+  imports: [CommonModule, SelectionRectComponent],
   template: `
-    <lib-connection-line />
     @if (flow.userSelectionActive() && flow.userSelectionRect()) {
       <lib-selection-rect [rect]="flow.userSelectionRect()!" />
     }
