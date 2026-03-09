@@ -404,12 +404,30 @@ export class FlowService {
 
   updateNode(id: string, update: Partial<GraphNode>): void {
     this.nodes.update((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, ...update } : n)),
+      prev.map((n) => {
+        if (n.id !== id) return n;
+        const merged = { ...n, ...update };
+        if (update.position) {
+          merged.computedPosition = {
+            ...merged.computedPosition,
+            x: update.position.x,
+            y: update.position.y,
+          };
+        }
+        return merged;
+      }),
     );
     this.nodeLookup.update((prev) => {
       const node = prev.get(id);
       if (node) {
         const updated = { ...node, ...update };
+        if (update.position) {
+          updated.computedPosition = {
+            ...updated.computedPosition,
+            x: update.position.x,
+            y: update.position.y,
+          };
+        }
         return new Map(prev).set(id, updated);
       }
       return prev;
@@ -431,7 +449,11 @@ export class FlowService {
   }
 
   updateNodeDimensions(updates: UpdateNodeDimensionsParams[]): void {
-    const changedIds = new Map<string, Dimensions>();
+    const changedIds = new Map<
+      string,
+      { dims: Dimensions; handleBounds: import('../types').NodeHandleBounds }
+    >();
+    const zoom = this.viewport().zoom || 1;
 
     this.nodes.update((prev) => {
       let changed = false;
@@ -452,20 +474,23 @@ export class FlowService {
         if (!dimsChanged) return node;
 
         changed = true;
-        changedIds.set(node.id, dims);
-        return { ...node, dimensions: dims };
+
+        const nodeBounds = el.getBoundingClientRect();
+        const hb = this._getHandleBoundsFromDOM(el, nodeBounds, zoom, node.id);
+
+        changedIds.set(node.id, { dims, handleBounds: hb });
+        return { ...node, dimensions: dims, handleBounds: hb };
       });
       return changed ? next : prev;
     });
 
-    // Sync nodeLookup so edge renderer recomputes with correct dimensions
     if (changedIds.size > 0) {
       this.nodeLookup.update((prev) => {
         const next = new Map(prev);
-        changedIds.forEach((dims, id) => {
+        changedIds.forEach(({ dims, handleBounds }, id) => {
           const node = next.get(id);
           if (node) {
-            next.set(id, { ...node, dimensions: dims });
+            next.set(id, { ...node, dimensions: dims, handleBounds });
           }
         });
         return next;
@@ -473,10 +498,66 @@ export class FlowService {
     }
   }
 
+  private _getHandleBoundsFromDOM(
+    nodeEl: HTMLElement,
+    nodeBounds: DOMRect,
+    zoom: number,
+    nodeId: string,
+  ): import('../types').NodeHandleBounds {
+    const getHandles = (
+      type: 'source' | 'target',
+    ): import('../types').HandleElement[] | null => {
+      const handles = nodeEl.querySelectorAll(`.vue-flow__handle.${type}`);
+      if (!handles?.length) return null;
+      return Array.from(handles).map((handle) => {
+        const hRect = handle.getBoundingClientRect();
+        return {
+          id: handle.getAttribute('data-handleid') ?? null,
+          type,
+          nodeId,
+          position:
+            (handle.getAttribute(
+              'data-handlepos',
+            ) as import('../types').Position) ?? 'bottom',
+          x: (hRect.left + hRect.width / 2 - nodeBounds.left) / zoom,
+          y: (hRect.top + hRect.height / 2 - nodeBounds.top) / zoom,
+          width: hRect.width / zoom,
+          height: hRect.height / zoom,
+        };
+      });
+    };
+
+    return {
+      source: getHandles('source'),
+      target: getHandles('target'),
+    };
+  }
+
   applyNodeChanges(changes: import('../types').NodeChange[]): void {
     const nodes = this.nodes();
     const updated = applyNodeChanges(changes, [...nodes]);
+
+    // Sync computedPosition for any position changes
+    for (const change of changes) {
+      if (change.type === 'position' && change.position) {
+        const node = updated.find((n) => n.id === change.id);
+        if (node) {
+          node.computedPosition = {
+            ...node.computedPosition,
+            x: change.position.x,
+            y: change.position.y,
+          };
+        }
+      }
+    }
+
     this.nodes.set(updated);
+
+    // Rebuild nodeLookup so edge renderer and other consumers see updated dimensions/positions
+    const lookup = new Map<string, GraphNode>();
+    updated.forEach((n) => lookup.set(n.id, n));
+    this.nodeLookup.set(lookup);
+
     this.nodesChange$.next(changes);
   }
 

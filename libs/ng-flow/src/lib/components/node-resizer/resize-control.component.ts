@@ -148,66 +148,114 @@ export class ResizeControlComponent implements OnInit, OnDestroy {
       .on('drag', (event) => {
         const nid = this._nodeId;
         if (!nid) return;
+        const node = this.flow.getNode(nid);
+        if (!node) return;
+
         const p = this._getPointer(event.sourceEvent as MouseEvent);
         const sv = this._startValues;
+        const {
+          x: prevX,
+          y: prevY,
+          width: prevWidth,
+          height: prevHeight,
+        } = this._prevValues;
 
-        const distX = enableX ? p.x - sv.pointerX : 0;
-        const distY = enableY ? p.y - sv.pointerY : 0;
+        const distX = Math.floor(enableX ? p.x - sv.pointerX : 0);
+        const distY = Math.floor(enableY ? p.y - sv.pointerY : 0);
 
-        const newW = clamp(
+        const width = clamp(
           sv.width + (invertX ? -distX : distX),
           this.minWidth(),
           this.maxWidth(),
         );
-        const newH = clamp(
+        const height = clamp(
           sv.height + (invertY ? -distY : distY),
           this.minHeight(),
           this.maxHeight(),
         );
 
-        const wChanged = newW !== this._prevValues.width;
-        const hChanged = newH !== this._prevValues.height;
+        const isWidthChange = width !== prevWidth;
+        const isHeightChange = height !== prevHeight;
 
-        const newX = invertX && wChanged ? sv.x - (newW - sv.width) : sv.x;
-        const newY = invertY && hChanged ? sv.y - (newH - sv.height) : sv.y;
+        const changes: import('../../types').NodeChange[] = [];
 
-        const dW = newW - this._prevValues.width;
-        const dH = newH - this._prevValues.height;
+        if (invertX || invertY) {
+          const x = invertX ? sv.x - (width - sv.width) : sv.x;
+          const y = invertY ? sv.y - (height - sv.height) : sv.y;
+
+          const isXPosChange = x !== prevX && isWidthChange;
+          const isYPosChange = y !== prevY && isHeightChange;
+
+          if (isXPosChange || isYPosChange) {
+            changes.push({
+              id: nid,
+              type: 'position',
+              from: node.position,
+              position: {
+                x: isXPosChange ? x : prevX,
+                y: isYPosChange ? y : prevY,
+              },
+            });
+
+            this._prevValues.x = isXPosChange ? x : prevX;
+            this._prevValues.y = isYPosChange ? y : prevY;
+          }
+        }
+
+        if (isWidthChange || isHeightChange) {
+          changes.push({
+            id: nid,
+            type: 'dimensions',
+            updateStyle: true,
+            resizing: true,
+            dimensions: { width, height },
+          });
+
+          this._prevValues.width = width;
+          this._prevValues.height = height;
+        }
+
+        if (changes.length === 0) return;
+
         const direction: [number, number] = [
           invertX
-            ? dW < 0
+            ? this._prevValues.width < prevWidth
               ? 1
-              : dW > 0
+              : this._prevValues.width > prevWidth
                 ? -1
                 : 0
-            : dW > 0
+            : this._prevValues.width > prevWidth
               ? 1
-              : dW < 0
+              : this._prevValues.width < prevWidth
                 ? -1
                 : 0,
           invertY
-            ? dH < 0
+            ? this._prevValues.height < prevHeight
               ? 1
-              : dH > 0
+              : this._prevValues.height > prevHeight
                 ? -1
                 : 0
-            : dH > 0
+            : this._prevValues.height > prevHeight
               ? 1
-              : dH < 0
+              : this._prevValues.height < prevHeight
                 ? -1
                 : 0,
         ];
 
-        if (wChanged || hChanged) {
-          this._prevValues = { width: newW, height: newH, x: newX, y: newY };
-          this.flow.updateNode(nid, {
-            position: { x: newX, y: newY },
-            style: { width: `${newW}px`, height: `${newH}px` },
-          });
-          this.resize.emit({ params: { ...this._prevValues, direction } });
-        }
+        this.resize.emit({ params: { ...this._prevValues, direction } });
+        this.flow.applyNodeChanges(changes);
       })
       .on('end', () => {
+        const nid = this._nodeId;
+        if (nid) {
+          this.flow.applyNodeChanges([
+            {
+              id: nid,
+              type: 'dimensions',
+              resizing: false,
+            },
+          ]);
+        }
         this.resizeEnd.emit({ params: { ...this._prevValues } });
       });
 
