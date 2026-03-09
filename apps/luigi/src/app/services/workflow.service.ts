@@ -114,7 +114,7 @@ export class WorkflowService {
       target: connection.target,
       sourceHandle: connection.sourceHandle ?? undefined,
       targetHandle: connection.targetHandle ?? undefined,
-      type: 'smoothstep',
+      type: 'default',
       markerEnd: MarkerType.ArrowClosed,
     };
     this.edges.update(

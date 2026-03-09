@@ -15,7 +15,8 @@
       "Bash(npx @angular/build application --tsConfig=apps/luigi/tsconfig.app.json --browser=apps/luigi/src/main.ts)",
       "Bash(NX_REJECT_UNKNOWN_LOCAL_CACHE=0 npx nx build luigi --skip-nx-cache)",
       "Bash(node -e \"const p = require\\(''./node_modules/lucide-angular/package.json''\\); console.log\\(JSON.stringify\\(p.exports, null, 2\\)\\)\")",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(grep -E \"\\\\.ts$|^total\")"
     ]
   }
 }

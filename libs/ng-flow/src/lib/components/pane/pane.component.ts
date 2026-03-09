@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FlowService } from '../../services/flow.service';
 import { SelectionRectComponent } from './selection-rect.component';
 import { SelectionMode } from '../../types';
+import { createSelectionChange } from '../../utils/changes';
 import { getNodesInside } from '../../utils';
 
 @Component({
@@ -44,6 +45,10 @@ export class PaneComponent {
     const dx = Math.abs(event.clientX - this._mouseDownPos.x);
     const dy = Math.abs(event.clientY - this._mouseDownPos.y);
     if (dx <= this.flow.paneClickDistance() && dy <= this.flow.paneClickDistance()) {
+      const deselect = this.flow.nodes()
+        .filter((n) => n.selected)
+        .map((n) => createSelectionChange(n.id, false));
+      if (deselect.length) this.flow.applyNodeChanges(deselect);
       this.flow.paneClick$.next(event);
     }
   }
@@ -149,7 +154,8 @@ export class PaneComponent {
       true,
     );
 
-    nodes.forEach((n) => this.flow.updateNode(n.id, { selected: true }));
+    const selChanges = nodes.map((n) => createSelectionChange(n.id, true));
+    if (selChanges.length) this.flow.applyNodeChanges(selChanges);
     this.flow.nodesSelectionActive.set(nodes.length > 0);
     this.flow.userSelectionActive.set(false);
     this.flow.userSelectionRect.set(null);

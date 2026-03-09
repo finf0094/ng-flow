@@ -145,13 +145,13 @@ export const INITIAL_RAW_NODES: RawNode[] = [
 ];
 
 export const INITIAL_EDGES: Edge[] = [
-  { id: 'e-schedule-http', source: 'schedule', target: 'http', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed },
-  { id: 'e-http-set', source: 'http', target: 'set', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed },
-  { id: 'e-set-if', source: 'set', target: 'if', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed },
-  { id: 'e-if-slack', source: 'if', sourceHandle: 'true', target: 'slack', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed, label: 'true' },
-  { id: 'e-if-email', source: 'if', sourceHandle: 'false', target: 'email', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed, label: 'false' },
-  { id: 'e-slack-merge', source: 'slack', target: 'merge', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed },
-  { id: 'e-email-merge', source: 'email', target: 'merge', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed },
-  { id: 'e-merge-respond', source: 'merge', target: 'respond', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed },
-  { id: 'e-ai-openai', source: 'ai-agent', target: 'openai', type: 'smoothstep', markerEnd: MarkerType.ArrowClosed },
+  { id: 'e-schedule-http', source: 'schedule', target: 'http', type: 'default', markerEnd: MarkerType.ArrowClosed },
+  { id: 'e-http-set', source: 'http', target: 'set', type: 'default', markerEnd: MarkerType.ArrowClosed },
+  { id: 'e-set-if', source: 'set', target: 'if', type: 'default', markerEnd: MarkerType.ArrowClosed },
+  { id: 'e-if-slack', source: 'if', sourceHandle: 'true', target: 'slack', type: 'default', markerEnd: MarkerType.ArrowClosed, label: 'true' },
+  { id: 'e-if-email', source: 'if', sourceHandle: 'false', target: 'email', type: 'default', markerEnd: MarkerType.ArrowClosed, label: 'false' },
+  { id: 'e-slack-merge', source: 'slack', target: 'merge', type: 'default', markerEnd: MarkerType.ArrowClosed },
+  { id: 'e-email-merge', source: 'email', target: 'merge', type: 'default', markerEnd: MarkerType.ArrowClosed },
+  { id: 'e-merge-respond', source: 'merge', target: 'respond', type: 'default', markerEnd: MarkerType.ArrowClosed },
+  { id: 'e-ai-openai', source: 'ai-agent', target: 'openai', type: 'default', markerEnd: MarkerType.ArrowClosed },
 ];

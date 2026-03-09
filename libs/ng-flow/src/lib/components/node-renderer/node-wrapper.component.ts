@@ -1,6 +1,8 @@
 import {
   Component,
+  ComponentRef,
   computed,
+  effect,
   ElementRef,
   HostListener,
   inject,
@@ -18,7 +20,8 @@ import { DefaultNodeComponent } from '../nodes/default-node.component';
 import { InputNodeComponent } from '../nodes/input-node.component';
 import { OutputNodeComponent } from '../nodes/output-node.component';
 import { NODE_ID_TOKEN } from '../nodes/node-id.token';
-import type { ComponentType, GraphNode } from '../../types';
+import { createSelectionChange } from '../../utils/changes';
+import type { ComponentType, GraphNode, NodeChange } from '../../types';
 
 @Component({
   selector: 'lib-node-wrapper',
@@ -108,6 +111,23 @@ export class NodeWrapperComponent implements OnInit, OnDestroy {
       : (n.zIndex ?? 0);
   });
 
+  private _componentRef: ComponentRef<unknown> | null = null;
+  private _declaredInputs = new Set<string>();
+
+  private readonly _syncInputsEffect = effect(() => {
+    const node = this.node();
+    if (!node || !this._componentRef) return;
+    const trySet = (name: string, val: unknown) => {
+      if (this._declaredInputs.has(name)) this._componentRef!.setInput(name, val);
+    };
+    trySet('selected', node.selected);
+    trySet('dragging', node.dragging);
+    trySet('resizing', node.resizing);
+    trySet('data', node.data);
+    trySet('label', node.label);
+    trySet('zIndex', node.zIndex ?? 0);
+  });
+
   private _isDragging = false;
   private _dragStartPos = { x: 0, y: 0 };
   private _nodeStartPos = { x: 0, y: 0 };
@@ -185,6 +205,10 @@ export class NodeWrapperComponent implements OnInit, OnDestroy {
     trySetInput('resizing', node.resizing);
     trySetInput('zIndex', node.zIndex ?? 0);
 
+    // Store ref + declared inputs so the effect can reactively update them
+    this._componentRef = ref;
+    this._declaredInputs = declaredInputs;
+
     ref.changeDetectorRef.detectChanges();
   }
 
@@ -205,15 +229,17 @@ export class NodeWrapperComponent implements OnInit, OnDestroy {
 
     if (this._isSelectable() && !node.selected) {
       const multi = event.ctrlKey || event.metaKey || event.shiftKey;
+      const changes: NodeChange[] = [];
       if (!multi) {
         // deselect others
         this.flow.nodes().forEach((n) => {
           if (n.id !== node.id && n.selected) {
-            this.flow.updateNode(n.id, { selected: false });
+            changes.push(createSelectionChange(n.id, false));
           }
         });
       }
-      this.flow.updateNode(node.id, { selected: true });
+      changes.push(createSelectionChange(node.id, true));
+      this.flow.applyNodeChanges(changes);
     }
 
     this.flow.nodeDragStart$.next({
