@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA, computed, input, output } from '@angular/core';
 import type { GraphNode, XYPosition } from '../../types';
 
 export type ShapeRendering = 'auto' | 'optimizeSpeed' | 'crispEdges' | 'geometricPrecision';
@@ -6,6 +6,7 @@ export type ShapeRendering = 'auto' | 'optimizeSpeed' | 'crispEdges' | 'geometri
 @Component({
   selector: 'lib-minimap-node',
   standalone: true,
+  schemas: [NO_ERRORS_SCHEMA],
   host: { style: 'display: contents' },
   template: `
     @if (!hidden() && dimensions().width && dimensions().height) {
