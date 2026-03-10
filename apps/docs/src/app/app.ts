@@ -11,6 +11,7 @@ import { ViewportPageComponent } from './pages/viewport.component';
 import { ApiReferenceComponent } from './pages/api-reference.component';
 import { DemoComponent } from './pages/demo.component';
 import { CustomizationComponent } from './pages/customization.component';
+import { MiniMapPageComponent } from './pages/minimap.component';
 
 type PageId =
   | 'intro'
@@ -21,6 +22,7 @@ type PageId =
   | 'background'
   | 'node-resizer'
   | 'viewport'
+  | 'minimap'
   | 'api'
   | 'customization'
   | 'demo';
@@ -46,6 +48,7 @@ interface NavItem {
     ViewportPageComponent,
     ApiReferenceComponent,
     CustomizationComponent,
+    MiniMapPageComponent,
     DemoComponent,
   ],
   templateUrl: './app.html',
@@ -63,6 +66,7 @@ export class App {
     { id: 'background',    label: 'Background',      icon: '⊟' },
     { id: 'node-resizer',  label: 'Node Resizer',    icon: '⤡' },
     { id: 'viewport',      label: 'Viewport',        icon: '⊞' },
+    { id: 'minimap',       label: 'MiniMap',         icon: '⊙' },
     { id: 'api',           label: 'API Reference',   icon: '📖' },
     { id: 'customization', label: 'Customization',   icon: '🎨' },
     { id: 'demo',          label: 'Live Demo',       icon: '✦' },
