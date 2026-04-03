@@ -15,7 +15,7 @@ export type PanelPosition =
   imports: [CommonModule],
   template: `<ng-content />`,
   host: {
-    class: 'vue-flow__panel',
+    class: 'ng-flow__panel',
     '[class.top]': '_isTop()',
     '[class.bottom]': '_isBottom()',
     '[class.left]': '_isLeft()',
@@ -25,6 +25,7 @@ export type PanelPosition =
   styles: [`
     :host {
       position: absolute;
+      display: inline-block;
       z-index: 5;
     }
     :host.top { top: 10px; }

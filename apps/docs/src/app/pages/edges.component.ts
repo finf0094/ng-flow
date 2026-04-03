@@ -1,6 +1,53 @@
-import { Component } from '@angular/core';
-import { MarkerType, NgFlowComponent, BackgroundComponent } from '@org/ng-flow';
+import { Component, input } from '@angular/core';
+import { MarkerType, NgFlowComponent, BackgroundComponent, getBezierPath } from '@org/ng-flow';
 import type { Node, Edge } from '@org/ng-flow';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'doc-gradient-edge',
+  standalone: true,
+  imports: [],
+  schemas: [NO_ERRORS_SCHEMA],
+  template: `
+    <svg style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none">
+      <defs>
+        <linearGradient [attr.id]="'grad-' + id()" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6366f1" />
+          <stop offset="100%" stop-color="#ec4899" />
+        </linearGradient>
+      </defs>
+      <path
+        [attr.d]="_path()"
+        class="ng-flow__edge-path"
+        fill="none"
+        [attr.stroke]="'url(#grad-' + id() + ')'"
+        stroke-width="3"
+        [attr.marker-end]="markerEnd() || null"
+      />
+      <path [attr.d]="_path()" fill="none" stroke-opacity="0" stroke-width="20" class="ng-flow__edge-interaction" />
+    </svg>
+  `,
+})
+class DocGradientEdgeComponent {
+  readonly id = input.required<string>();
+  readonly sourceX = input<number>(0);
+  readonly sourceY = input<number>(0);
+  readonly targetX = input<number>(0);
+  readonly targetY = input<number>(0);
+  readonly sourcePosition = input<any>(undefined);
+  readonly targetPosition = input<any>(undefined);
+  readonly markerEnd = input<string | undefined>(undefined);
+  readonly label = input<string | undefined>(undefined);
+
+  _path() {
+    const [path] = getBezierPath({
+      sourceX: this.sourceX(), sourceY: this.sourceY(),
+      targetX: this.targetX(), targetY: this.targetY(),
+      sourcePosition: this.sourcePosition(), targetPosition: this.targetPosition(),
+    });
+    return path;
+  }
+}
 
 @Component({
   selector: 'app-docs-edges',
@@ -115,6 +162,31 @@ import type { Node, Edge } from '@org/ng-flow';
           <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
         </lib-ng-flow>
       </div>
+
+      <h2>edgeTypes — custom edge components</h2>
+      <p>
+        Register a map of type name → component class via <code>[edgeTypes]</code> on
+        <code>&lt;lib-ng-flow&gt;</code>. Any edge with a matching <code>type</code> will use your
+        component instead of a built-in edge. Your component receives the same inputs as built-in
+        edges: <code>sourceX</code>, <code>sourceY</code>, <code>targetX</code>, <code>targetY</code>,
+        <code>sourcePosition</code>, <code>targetPosition</code>, <code>markerEnd</code>,
+        <code>label</code>, <code>data</code>, etc.
+      </p>
+      <pre class="code-block">{{ edgeTypesCode }}</pre>
+
+      <p class="live-label">Custom gradient edge via edgeTypes</p>
+      <div class="flow-wrap">
+        <lib-ng-flow
+          [nodes]="edgeTypesNodes"
+          [edges]="edgeTypesEdges"
+          [edgeTypes]="edgeTypesMap"
+          [fitViewOnInit]="true"
+          [nodesDraggable]="false"
+          style="height: 280px"
+        >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
+        </lib-ng-flow>
+      </div>
     </div>
   `,
   styles: [`
@@ -173,6 +245,46 @@ export class EdgesComponent {
       style: { stroke: '#6366f1', strokeWidth: 2 } as any,
     },
   ];
+
+  readonly edgeTypesNodes: Node[] = [
+    { id: 'g1', type: 'input', position: { x: 80, y: 100 }, label: 'Source' },
+    { id: 'g2', type: 'output', position: { x: 420, y: 100 }, label: 'Target' },
+  ];
+
+  readonly edgeTypesEdges: Edge[] = [
+    { id: 'ge1', source: 'g1', target: 'g2', type: 'gradient', label: 'gradient edge' },
+  ];
+
+  readonly edgeTypesMap = { gradient: DocGradientEdgeComponent };
+
+  readonly edgeTypesCode = `// 1. Define your edge component (use BaseEdgeComponent for the path)
+@Component({ selector: 'app-my-edge', standalone: true, imports: [BaseEdgeComponent], schemas: [NO_ERRORS_SCHEMA], template: \`
+  <lib-base-edge [path]="_path()" [markerEnd]="markerEnd()" [label]="label()" />
+\` })
+export class MyEdgeComponent {
+  readonly id = input.required<string>();
+  readonly sourceX = input<number>(0);
+  readonly sourceY = input<number>(0);
+  readonly targetX = input<number>(0);
+  readonly targetY = input<number>(0);
+  readonly sourcePosition = input<any>(undefined);
+  readonly targetPosition = input<any>(undefined);
+  readonly markerEnd = input<string | undefined>(undefined);
+  readonly label = input<string | undefined>(undefined);
+
+  _path() {
+    const [path] = getBezierPath({ sourceX: this.sourceX(), sourceY: this.sourceY(),
+      targetX: this.targetX(), targetY: this.targetY(),
+      sourcePosition: this.sourcePosition(), targetPosition: this.targetPosition() });
+    return path;
+  }
+}
+
+// 2. Register via [edgeTypes]
+const edgeTypes = { myEdge: MyEdgeComponent };
+
+// 3. Use type: 'myEdge' on any edge
+const edges = [{ id: 'e1', source: 'a', target: 'b', type: 'myEdge' }];`;
 
   readonly edgeOptionsCode = `const edge: Edge = {
   id: 'e1',

@@ -9,7 +9,7 @@ import type { HandleConnectable } from '../../types';
   standalone: true,
   imports: [CommonModule, HandleComponent],
   template: `
-    <div class="vue-flow__node-label">{{ label() }}</div>
+    <div class="ng-flow__node-label">{{ label() }}</div>
     <lib-handle [type]="'source'" [position]="sourcePosition()" />
   `,
 })

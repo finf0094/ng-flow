@@ -8,7 +8,7 @@ import type { SelectionRect } from '../../types';
   imports: [CommonModule],
   template: `
     <div
-      class="vue-flow__selection vue-flow__container"
+      class="ng-flow__selection ng-flow__container"
       [style.left.px]="rect().x"
       [style.top.px]="rect().y"
       [style.width.px]="rect().width"

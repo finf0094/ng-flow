@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  HostListener,
   inject,
   input,
   OnChanges,
@@ -20,6 +21,7 @@ import { EdgeRendererComponent } from '../edge-renderer/edge-renderer.component'
 import { ConnectionLineComponent } from '../pane/connection-line.component';
 import { PanOnScrollMode, ConnectionMode, SelectionMode } from '../../types';
 import type {
+  ComponentType,
   Connection,
   ConnectionLineOptions,
   CoordinateExtent,
@@ -43,7 +45,6 @@ import type {
   OnConnectStartParams,
   Rect,
   SetCenterOptions,
-  TransitionOptions,
   ValidConnectionFunc,
   ViewportTransform,
   XYPosition,
@@ -127,6 +128,8 @@ export class NgFlowComponent
   readonly disableKeyboardA11y = input<boolean>(false);
   readonly onlyRenderVisibleElements = input<boolean>(false);
   readonly applyDefault = input<boolean>(true);
+  readonly nodeTypes = input<Record<string, ComponentType>>({});
+  readonly edgeTypes = input<Record<string, ComponentType>>({});
 
   // ---- outputs (mirrors FlowEmits) ----
   readonly nodesChange = output<NodeChange[]>();
@@ -195,6 +198,72 @@ export class NgFlowComponent
     this._subs.forEach((s) => s.unsubscribe());
   }
 
+  @HostListener('document:keydown', ['$event'])
+  _onKeyDown(event: KeyboardEvent): void {
+    if (!this.flow.initialized()) return;
+    const target = event.target as HTMLElement;
+    // Ignore if focused on input/textarea/contenteditable
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable
+    ) return;
+
+    const deleteCode = this.flow.deleteKeyCode();
+    if (deleteCode && event.key === deleteCode) {
+      if (this.flow.elementsSelectable()) {
+        this._deleteSelectedElements();
+      }
+    }
+
+    const multiCode = this.flow.multiSelectionKeyCode();
+    if (multiCode && event.key === multiCode) {
+      this.flow.multiSelectionActive.set(true);
+    }
+
+    const selCode = this.flow.selectionKeyCode();
+    if (selCode && selCode !== true && event.key === selCode) {
+      this.flow.userSelectionActive.set(true);
+    }
+  }
+
+  @HostListener('document:keyup', ['$event'])
+  _onKeyUp(event: KeyboardEvent): void {
+    const multiCode = this.flow.multiSelectionKeyCode();
+    if (multiCode && event.key === multiCode) {
+      this.flow.multiSelectionActive.set(false);
+    }
+
+    const selCode = this.flow.selectionKeyCode();
+    if (selCode && selCode !== true && event.key === selCode) {
+      this.flow.userSelectionActive.set(false);
+    }
+  }
+
+  private _deleteSelectedElements(): void {
+    const f = this.flow;
+    const selectedNodes = f.nodes().filter((n) => n.selected && n.deletable !== false);
+    const selectedEdges = f.edges().filter((e) => e.selected && e.deletable !== false);
+
+    if (selectedNodes.length) {
+      f.applyNodeChanges(
+        selectedNodes.map((n) => ({ id: n.id, type: 'remove' as const })),
+      );
+    }
+    if (selectedEdges.length) {
+      f.applyEdgeChanges(
+        selectedEdges.map((e) => ({
+          id: e.id,
+          type: 'remove' as const,
+          source: e.source,
+          target: e.target,
+          sourceHandle: e.sourceHandle ?? null,
+          targetHandle: e.targetHandle ?? null,
+        })),
+      );
+    }
+  }
+
   private _applyAllProps(): void {
     const id = this.id();
     if (id) this.flow.id.set(id);
@@ -246,6 +315,8 @@ export class NgFlowComponent
       disableKeyboardA11y: this.disableKeyboardA11y(),
       onlyRenderVisibleElements: this.onlyRenderVisibleElements(),
       applyDefault: this.applyDefault(),
+      nodeTypes: this.nodeTypes(),
+      edgeTypes: this.edgeTypes(),
     });
   }
 

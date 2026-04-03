@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FlowService } from '../../services/flow.service';
 import { SelectionRectComponent } from './selection-rect.component';
+import { NodesSelectionComponent } from './nodes-selection.component';
 import { SelectionMode } from '../../types';
 import type { EdgeChange } from '../../types';
 import { createSelectionChange } from '../../utils/changes';
@@ -16,15 +17,18 @@ import { getNodesInside } from '../../utils';
 @Component({
   selector: 'lib-pane',
   standalone: true,
-  imports: [CommonModule, SelectionRectComponent],
+  imports: [CommonModule, SelectionRectComponent, NodesSelectionComponent],
   template: `
     @if (flow.userSelectionActive() && flow.userSelectionRect()) {
       <lib-selection-rect [rect]="flow.userSelectionRect()!" />
     }
+    @if (flow.nodesSelectionActive()) {
+      <lib-nodes-selection />
+    }
     <ng-content />
   `,
   host: {
-    class: 'vue-flow__pane vue-flow__container',
+    class: 'ng-flow__pane ng-flow__container',
     '[class.draggable]': '!flow.userSelectionActive() && _isPannable()',
     '[class.selection]': 'flow.userSelectionActive()',
     '[class.dragging]': 'flow.paneDragging()',

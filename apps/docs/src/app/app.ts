@@ -11,16 +11,20 @@ import { ViewportPageComponent } from './pages/viewport.component';
 import { ApiReferenceComponent } from './pages/api-reference.component';
 import { DemoComponent } from './pages/demo.component';
 import { CustomizationComponent } from './pages/customization.component';
+import { MiniMapPageComponent } from './pages/minimap.component';
+import { CustomEdgesComponent } from './pages/custom-edges.component';
 
 type PageId =
   | 'intro'
   | 'nodes'
   | 'edges'
+  | 'custom-edges'
   | 'handles'
   | 'interactivity'
   | 'background'
   | 'node-resizer'
   | 'viewport'
+  | 'minimap'
   | 'api'
   | 'customization'
   | 'demo';
@@ -46,7 +50,9 @@ interface NavItem {
     ViewportPageComponent,
     ApiReferenceComponent,
     CustomizationComponent,
+    MiniMapPageComponent,
     DemoComponent,
+    CustomEdgesComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -58,11 +64,13 @@ export class App {
     { id: 'intro',         label: 'Getting Started', icon: '🚀' },
     { id: 'nodes',         label: 'Nodes',           icon: '⬡' },
     { id: 'edges',         label: 'Edges',           icon: '⟿' },
+    { id: 'custom-edges',  label: 'Custom Edges',    icon: '⤳' },
     { id: 'handles',       label: 'Handles',         icon: '◉' },
     { id: 'interactivity', label: 'Interactivity',   icon: '🔗' },
     { id: 'background',    label: 'Background',      icon: '⊟' },
     { id: 'node-resizer',  label: 'Node Resizer',    icon: '⤡' },
     { id: 'viewport',      label: 'Viewport',        icon: '⊞' },
+    { id: 'minimap',       label: 'MiniMap',         icon: '⊙' },
     { id: 'api',           label: 'API Reference',   icon: '📖' },
     { id: 'customization', label: 'Customization',   icon: '🎨' },
     { id: 'demo',          label: 'Live Demo',       icon: '✦' },

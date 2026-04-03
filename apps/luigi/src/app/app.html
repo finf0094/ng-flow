@@ -1,73 +1,114 @@
-<div class="layout">
-  <!-- ── Header ──────────────────────────────────────────────── -->
-  <header class="header">
-    <button
-      class="btn-icon"
-      title="Add node"
-      (click)="workflow.paletteOpen.set(!workflow.paletteOpen())"
-    >
-      <app-icon name="plus" [size]="18" />
-    </button>
+<div class="app-layout">
 
-    <div class="divider"></div>
+  <!-- ── Header ───────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="header-logo">
+        <app-icon name="workflow" [size]="20" />
+      </div>
+      <div class="header-divider"></div>
+      <nav class="breadcrumb">
+        <span class="breadcrumb-item">Workflows</span>
+        <app-icon name="chevron-right" [size]="14" class="breadcrumb-sep" />
+        <span class="breadcrumb-item active">Luigi Workflow</span>
+      </nav>
+    </div>
 
-    <app-icon name="workflow" [size]="16" class="logo-icon" />
-    <span class="title">Luigi Workflow</span>
+    <div class="header-right">
+      <button class="btn-icon" title="Zoom out" (click)="workflow.zoomOut()">
+        <app-icon name="zoom-out" [size]="14" />
+      </button>
+      <span class="zoom-badge">{{ workflow.zoomLevel() }}%</span>
+      <button class="btn-icon" title="Zoom in" (click)="workflow.zoomIn()">
+        <app-icon name="zoom-in" [size]="14" />
+      </button>
 
-    <div class="spacer"></div>
+      <div class="hd"></div>
 
-    <span class="stat">
-      <app-icon name="layout-grid" [size]="12" />
-      {{ workflow.nodeCount() }} nodes
-    </span>
-    <span class="stat">
-      {{ workflow.edgeCount() }} edges
-    </span>
-
-    <div class="divider"></div>
-
-    <button class="btn" title="Zoom in" (click)="workflow.zoomIn()">
-      <app-icon name="zoom-in" [size]="14" />
-    </button>
-    <span class="zoom-badge">{{ workflow.zoomLevel() }}%</span>
-    <button class="btn" title="Zoom out" (click)="workflow.zoomOut()">
-      <app-icon name="zoom-out" [size]="14" />
-    </button>
-
-    <div class="divider"></div>
-
-    <button class="btn btn-primary" (click)="workflow.fitView()">
-      <app-icon name="maximize-2" [size]="14" />
-      Fit view
-    </button>
+      <button class="btn" (click)="workflow.fitView()">
+        <app-icon name="maximize-2" [size]="14" />
+        Fit View
+      </button>
+      <button class="btn btn-add" (click)="workflow.paletteOpen.set(!workflow.paletteOpen())">
+        <app-icon name="plus" [size]="14" />
+        Add node
+      </button>
+      <button class="btn btn-execute">
+        <app-icon name="play" [size]="14" />
+        Execute workflow
+      </button>
+      <button class="btn btn-save">
+        <app-icon name="save" [size]="14" />
+        Save
+      </button>
+    </div>
   </header>
 
-  <!-- ── Node palette (slide-in) ──────────────────────────── -->
-  @if (workflow.paletteOpen()) {
-    <app-node-palette />
-  }
+  <!-- ── Body ─────────────────────────────────────────────────── -->
+  <div class="app-body">
 
-  <!-- ── Canvas ───────────────────────────────────────────── -->
-  <div class="canvas-wrap">
-    <lib-ng-flow
-      [nodes]="workflow.nodes()"
-      [edges]="workflow.edges()"
-      [fitViewOnInit]="true"
-      [applyDefault]="false"
-      [snapToGrid]="true"
-      [snapGrid]="[20, 20]"
-      [minZoom]="0.2"
-      [maxZoom]="3"
-      [connectionMode]="ConnectionMode.Loose"
-      [connectionRadius]="30"
-      [connectionLineOptions]="connLineOptions"
-      (init)="onInit($event)"
-      (nodesChange)="onNodesChange($event)"
-      (edgesChange)="onEdgesChange($event)"
-      (connect)="onConnect($event)"
-      (viewportChange)="onViewportChange($event)"
-    >
-      <lib-background variant="dots" [gap]="40" color="#2a2f3a" bgColor="#141720" />
-    </lib-ng-flow>
+    <!-- Left sidebar -->
+    <aside class="app-sidebar">
+      <nav class="sidebar-nav">
+        <button class="sidebar-btn active" title="Workflows">
+          <app-icon name="layout-grid" [size]="18" />
+        </button>
+        <button class="sidebar-btn" title="Credentials">
+          <app-icon name="key" [size]="18" />
+        </button>
+        <button class="sidebar-btn" title="Templates">
+          <app-icon name="layers" [size]="18" />
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="sidebar-btn" title="Help">
+          <app-icon name="help-circle" [size]="18" />
+        </button>
+        <button class="sidebar-btn" title="Settings">
+          <app-icon name="settings" [size]="18" />
+        </button>
+      </div>
+    </aside>
+
+    <!-- Canvas area -->
+    <div class="canvas-area">
+      @if (workflow.paletteOpen()) {
+        <app-node-palette />
+      }
+
+      <lib-ng-flow
+        [nodes]="workflow.nodes()"
+        [edges]="workflow.edges()"
+        [fitViewOnInit]="true"
+        [applyDefault]="false"
+        [snapToGrid]="true"
+        [snapGrid]="[20, 20]"
+        [minZoom]="0.2"
+        [maxZoom]="3"
+        [connectionMode]="ConnectionMode.Loose"
+        [connectionRadius]="30"
+        [connectionLineOptions]="connLineOptions"
+        (init)="onInit($event)"
+        (nodesChange)="onNodesChange($event)"
+        (edgesChange)="onEdgesChange($event)"
+        (connect)="onConnect($event)"
+        (viewportChange)="onViewportChange($event)"
+      >
+        <lib-background variant="dots" [gap]="20" color="#d1d5db" bgColor="#f5f5f5" />
+        <lib-minimap
+          [pannable]="true"
+          [zoomable]="true"
+          nodeColor="#e5e7eb"ы
+          nodeStrokeColor="#d1d5db"
+          [nodeStrokeWidth]="1"
+          [nodeBorderRadius]="4"
+          maskColor="rgba(99, 102, 241, 0.08)"
+          maskStrokeColor="rgba(99, 102, 241, 0.35)"
+          [maskStrokeWidth]="1"
+          [maskBorderRadius]="4"
+        />
+      </lib-ng-flow>
+    </div>
   </div>
+
 </div>

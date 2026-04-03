@@ -10,6 +10,7 @@ import {
 import { Subject } from 'rxjs';
 import { zoomIdentity } from 'd3-zoom';
 import type {
+  ComponentType,
   Connection,
   ConnectionLineOptions,
   ConnectionLineType,
@@ -63,9 +64,11 @@ import {
   getIncomers,
   getNodesInside,
   getOutgoers,
+  getOverlappingArea,
   getRectOfNodes,
   getTransformForBounds,
   isMacOs,
+  nodeToRect,
   parseEdge,
   parseNode,
   pointToRendererPoint,
@@ -235,6 +238,9 @@ export class FlowService {
   readonly disableKeyboardA11y: WritableSignal<boolean> = signal(false);
   readonly ariaLiveMessage: WritableSignal<string> = signal('');
 
+  readonly nodeTypes: WritableSignal<Record<string, ComponentType>> = signal({});
+  readonly edgeTypes: WritableSignal<Record<string, ComponentType>> = signal({});
+
   // DOM refs
   flowRef: HTMLDivElement | null = null;
   viewportRef: HTMLDivElement | null = null;
@@ -321,6 +327,7 @@ export class FlowService {
   setNodes(nodes: Node[] | GraphNode[]): void {
     const existing = this.nodeLookup();
     const parsed = nodes.map((n) => parseNode(n as Node, existing.get(n.id)));
+    this._resolveParentPositions(parsed);
     this.nodes.set(parsed);
   }
 
@@ -347,7 +354,9 @@ export class FlowService {
       const filtered = prev.filter(
         (n) => !newNodes.some((nn) => nn.id === n.id),
       );
-      return [...filtered, ...newNodes];
+      const all = [...filtered, ...newNodes];
+      this._resolveParentPositions(all);
+      return all;
     });
   }
 
@@ -456,6 +465,35 @@ export class FlowService {
     });
   }
 
+  /** Compute absolute computedPosition for child nodes based on parent's computedPosition.
+   *  Mutates the array in place. Iterates until convergence to support arbitrary nesting depth. */
+  private _resolveParentPositions(nodes: GraphNode[]): void {
+    const lookup = new Map<string, GraphNode>();
+    for (const node of nodes) lookup.set(node.id, node);
+
+    for (let pass = 0; pass < nodes.length; pass++) {
+      let changed = false;
+      for (const node of nodes) {
+        const parentId = node.parentNode;
+        if (!parentId) continue;
+        const parent = lookup.get(parentId);
+        if (!parent) continue;
+        const newX = parent.computedPosition.x + node.position.x;
+        const newY = parent.computedPosition.y + node.position.y;
+        const newZ = parent.computedPosition.z ?? 0;
+        if (
+          node.computedPosition.x !== newX ||
+          node.computedPosition.y !== newY ||
+          node.computedPosition.z !== newZ
+        ) {
+          node.computedPosition = { x: newX, y: newY, z: newZ };
+          changed = true;
+        }
+      }
+      if (!changed) break;
+    }
+  }
+
   private _getHandleBoundsFromDOM(
     nodeEl: HTMLElement,
     nodeBounds: DOMRect,
@@ -465,7 +503,7 @@ export class FlowService {
     const getHandles = (
       type: 'source' | 'target',
     ): import('../types').HandleElement[] | null => {
-      const handles = nodeEl.querySelectorAll(`.vue-flow__handle.${type}`);
+      const handles = nodeEl.querySelectorAll(`.ng-flow__handle.${type}`);
       if (!handles?.length) return null;
       return Array.from(handles).map((handle) => {
         const hRect = handle.getBoundingClientRect();
@@ -509,6 +547,8 @@ export class FlowService {
       }
     }
 
+    // Re-resolve parent positions so child nodes follow their parent
+    this._resolveParentPositions(updated);
     this.nodes.set(updated);
 
     this.nodesChange$.next(changes);
@@ -521,8 +561,20 @@ export class FlowService {
     this.edgesChange$.next(changes);
   }
 
-  setViewport(viewport: ViewportTransform): void {
-    this.viewport.set(viewport);
+  setViewport(
+    viewport: ViewportTransform,
+    options?: import('../types').TransitionOptions,
+  ): Promise<boolean> {
+    const zoom = this.d3Zoom();
+    const sel = this.d3Selection();
+    if (!zoom || !sel) {
+      this.viewport.set(viewport);
+      return Promise.resolve(false);
+    }
+    const transform = zoomIdentity.translate(viewport.x, viewport.y).scale(viewport.zoom);
+    const dur = options?.duration ?? 0;
+    zoom.transform(_withDuration(sel, dur), transform);
+    return Promise.resolve(true);
   }
 
   setMinZoom(zoom: number): void {
@@ -581,8 +633,8 @@ export class FlowService {
     );
 
     const newTransform = zoomIdentity.translate(x, y).scale(z);
-
-    zoom.transform(sel, newTransform);
+    const dur = params.duration ?? 0;
+    zoom.transform(_withDuration(sel, dur), newTransform);
     return Promise.resolve(true);
   }
 
@@ -614,7 +666,8 @@ export class FlowService {
     const zoom = this.d3Zoom();
     const sel = this.d3Selection();
     if (!zoom || !sel) return Promise.resolve(false);
-    zoom.scaleTo(sel, zoomLevel);
+    const dur = options?.duration ?? 0;
+    zoom.scaleTo(_withDuration(sel, dur), zoomLevel);
     return Promise.resolve(true);
   }
 
@@ -629,8 +682,9 @@ export class FlowService {
 
     const { width, height } = this.dimensions();
     const z = options?.zoom ?? this.viewport().zoom;
+    const dur = options?.duration ?? 0;
     zoom.transform(
-      sel,
+      _withDuration(sel, dur),
       zoomIdentity.translate(width / 2 - x * z, height / 2 - y * z).scale(z),
     );
     return Promise.resolve(true);
@@ -656,7 +710,22 @@ export class FlowService {
       this.maxZoom(),
       options?.padding,
     );
-    zoom.transform(sel, zoomIdentity.translate(x, y).scale(z));
+    const dur = options?.duration ?? 0;
+    zoom.transform(_withDuration(sel, dur), zoomIdentity.translate(x, y).scale(z));
+    return Promise.resolve(true);
+  }
+
+  panBy(delta: XYPosition, options?: import('../types').TransitionOptions): Promise<boolean> {
+    const zoom = this.d3Zoom();
+    const sel = this.d3Selection();
+    if (!zoom || !sel) return Promise.resolve(false);
+    const { x, y, zoom: z } = this.viewport();
+    const nextTransform = zoomIdentity.translate(x + delta.x, y + delta.y).scale(z);
+    const dim = this.dimensions();
+    const extent: CoordinateExtent = [[0, 0], [dim.width, dim.height]];
+    const constrained = zoom.constrain()(nextTransform, extent, this.translateExtent());
+    const dur = options?.duration ?? 0;
+    zoom.transform(_withDuration(sel, dur), constrained);
     return Promise.resolve(true);
   }
 
@@ -781,6 +850,189 @@ export class FlowService {
       this.onlyRenderVisibleElements.set(props.onlyRenderVisibleElements);
     if (props.applyDefault !== undefined)
       this.applyDefault.set(props.applyDefault);
+    if (props.nodeTypes !== undefined)
+      this.nodeTypes.set(props.nodeTypes);
+    if (props.edgeTypes !== undefined)
+      this.edgeTypes.set(props.edgeTypes);
+  }
+
+  setInteractive(interactive: boolean): void {
+    this.nodesDraggable.set(interactive);
+    this.nodesConnectable.set(interactive);
+    this.elementsSelectable.set(interactive);
+  }
+
+  updateNodeData<T = import('../types').ElementData>(id: string, data: Partial<T> | ((current: T) => T)): void {
+    this.nodes.update((prev) =>
+      prev.map((n) => {
+        if (n.id !== id) return n;
+        const newData = typeof data === 'function'
+          ? (data as (c: T) => T)(n.data as T)
+          : { ...n.data, ...data };
+        return { ...n, data: newData };
+      }),
+    );
+  }
+
+  updateEdgeData<T = import('../types').ElementData>(id: string, data: Partial<T> | ((current: T) => T)): void {
+    this.edges.update((prev) =>
+      prev.map((e) => {
+        if (e.id !== id) return e;
+        const newData = typeof data === 'function'
+          ? (data as (c: T) => T)(e.data as T)
+          : { ...e.data, ...data };
+        return { ...e, data: newData };
+      }),
+    );
+  }
+
+  updateNodeInternals(nodeIds?: string[]): void {
+    const zoom = this.viewport().zoom || 1;
+    const ids = nodeIds ? new Set(nodeIds) : null;
+    this.nodes.update((prev) => {
+      let changed = false;
+      const next = prev.map((node) => {
+        if (ids && !ids.has(node.id)) return node;
+        const nodeEl = this.flowRef?.querySelector(
+          `[data-id="${node.id}"]`,
+        ) as HTMLElement | null;
+        if (!nodeEl) return node;
+        const nodeBounds = nodeEl.getBoundingClientRect();
+        const hb = this._getHandleBoundsFromDOM(nodeEl, nodeBounds, zoom, node.id);
+        changed = true;
+        return { ...node, handleBounds: hb };
+      });
+      return changed ? next : prev;
+    });
+  }
+
+  getIntersectingNodes(
+    nodeOrRect: GraphNode | import('../types').Rect,
+    partially = true,
+    nodes?: GraphNode[],
+  ): GraphNode[] {
+    const rect = 'dimensions' in nodeOrRect
+      ? nodeToRect(nodeOrRect as GraphNode)
+      : (nodeOrRect as import('../types').Rect);
+    const sourceId = 'id' in nodeOrRect ? (nodeOrRect as GraphNode).id : null;
+    return (nodes ?? this.getNodes()).filter((n) => {
+      if (sourceId && n.id === sourceId) return false;
+      const nRect = nodeToRect(n);
+      if (partially) return getOverlappingArea(rect, nRect) > 0;
+      return (
+        nRect.x >= rect.x &&
+        nRect.y >= rect.y &&
+        nRect.x + nRect.width <= rect.x + rect.width &&
+        nRect.y + nRect.height <= rect.y + rect.height
+      );
+    });
+  }
+
+  isNodeIntersecting(
+    nodeOrRect: GraphNode | import('../types').Rect,
+    area: import('../types').Rect,
+    partially = true,
+  ): boolean {
+    const rect = 'dimensions' in nodeOrRect
+      ? nodeToRect(nodeOrRect as GraphNode)
+      : (nodeOrRect as import('../types').Rect);
+    if (partially) return getOverlappingArea(rect, area) > 0;
+    return (
+      rect.x >= area.x &&
+      rect.y >= area.y &&
+      rect.x + rect.width <= area.x + area.width &&
+      rect.y + rect.height <= area.y + area.height
+    );
+  }
+
+  addSelectedNodes(nodes: GraphNode[]): void {
+    const ids = new Set(nodes.map((n) => n.id));
+    const changes = this.nodes()
+      .filter((n) => ids.has(n.id) && !n.selected)
+      .map((n) => ({ id: n.id, type: 'select' as const, selected: true }));
+    if (changes.length) this.applyNodeChanges(changes);
+    this.nodesSelectionActive.set(true);
+  }
+
+  removeSelectedNodes(nodes?: GraphNode[]): void {
+    const ids = nodes ? new Set(nodes.map((n) => n.id)) : null;
+    const changes = this.nodes()
+      .filter((n) => n.selected && (!ids || ids.has(n.id)))
+      .map((n) => ({ id: n.id, type: 'select' as const, selected: false }));
+    if (changes.length) this.applyNodeChanges(changes);
+    if (!this.nodes().some((n) => n.selected)) this.nodesSelectionActive.set(false);
+  }
+
+  addSelectedEdges(edges: GraphEdge[]): void {
+    const ids = new Set(edges.map((e) => e.id));
+    const changes = this.edges()
+      .filter((e) => ids.has(e.id) && !e.selected)
+      .map((e) => ({ id: e.id, type: 'select' as const, selected: true }));
+    if (changes.length) this.applyEdgeChanges(changes);
+  }
+
+  removeSelectedEdges(edges?: GraphEdge[]): void {
+    const ids = edges ? new Set(edges.map((e) => e.id)) : null;
+    const changes = this.edges()
+      .filter((e) => e.selected && (!ids || ids.has(e.id)))
+      .map((e) => ({ id: e.id, type: 'select' as const, selected: false }));
+    if (changes.length) this.applyEdgeChanges(changes);
+  }
+
+  $reset(): void {
+    this.nodes.set([]);
+    this.edges.set([]);
+    this.edgeLookup.set(new Map());
+    this.connectionLookup.set(new Map());
+    this.viewport.set({ x: 0, y: 0, zoom: 1 });
+    this.nodesSelectionActive.set(false);
+    this.userSelectionActive.set(false);
+    this.userSelectionRect.set(null);
+    this.multiSelectionActive.set(false);
+    this.connectionStartHandle.set(null);
+    this.connectionEndHandle.set(null);
+    this.connectionClickStartHandle.set(null);
+    this.connectionStatus.set(null);
+    this.fitViewOnInitDone.set(false);
+    this.initialized.set(false);
+  }
+
+  /** Begin a connection/reconnect from a handle. Position is in client/pane coords. */
+  startConnection(handle: import('../types').HandleElement, position?: import('../types').XYPosition, isClick = false): void {
+    const connectingHandle: import('../types').ConnectingHandle = {
+      nodeId: handle.nodeId,
+      id: handle.id ?? null,
+      type: handle.type,
+      position: handle.position,
+      x: handle.x,
+      y: handle.y,
+    };
+    if (isClick) {
+      this.connectionClickStartHandle.set(connectingHandle);
+    } else {
+      this.connectionStartHandle.set(connectingHandle);
+    }
+    if (position) this.connectionPosition.set(position);
+    this.connectionStatus.set(null);
+    this.connectionEndHandle.set(null);
+  }
+
+  /** Update the in-progress connection endpoint position (pane coords). */
+  updateConnection(position: import('../types').XYPosition, endHandle?: import('../types').ConnectingHandle | null, status?: import('../types').ConnectionStatus | null): void {
+    this.connectionPosition.set(position);
+    if (endHandle !== undefined) this.connectionEndHandle.set(endHandle);
+    if (status !== undefined) this.connectionStatus.set(status);
+  }
+
+  /** End the current connection/reconnect operation. */
+  endConnection(_event?: MouseEvent | TouchEvent, isClick = false): void {
+    if (isClick) {
+      this.connectionClickStartHandle.set(null);
+    } else {
+      this.connectionStartHandle.set(null);
+    }
+    this.connectionEndHandle.set(null);
+    this.connectionStatus.set(null);
   }
 
   private _zoomBy(
@@ -790,7 +1042,14 @@ export class FlowService {
     const zoom = this.d3Zoom();
     const sel = this.d3Selection();
     if (!zoom || !sel) return Promise.resolve(false);
-    zoom.scaleBy(sel, factor);
+    zoom.scaleBy(_withDuration(sel, options?.duration), factor);
     return Promise.resolve(true);
   }
+}
+
+/** Returns a D3 selection with an optional transition duration applied.
+ *  The cast to `any` is required because D3Selection is typed without
+ *  `.transition()` — at runtime d3-zoom accepts both Selection and Transition. */
+function _withDuration(sel: import('../types').D3Selection, duration?: number): any {
+  return duration ? (sel as any).transition().duration(duration) : sel;
 }

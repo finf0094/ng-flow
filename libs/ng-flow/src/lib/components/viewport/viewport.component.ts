@@ -22,10 +22,10 @@ import { clamp, wheelDelta } from '../../utils';
   standalone: true,
   imports: [CommonModule, PaneComponent],
   template: `
-    <div #viewportEl class="vue-flow__viewport vue-flow__container">
+    <div #viewportEl class="ng-flow__viewport ng-flow__container">
       <lib-pane>
         <div
-          class="vue-flow__transformationpane vue-flow__container"
+          class="ng-flow__transformationpane ng-flow__container"
           [style.transform]="_transformStyle()"
         >
           <ng-content />

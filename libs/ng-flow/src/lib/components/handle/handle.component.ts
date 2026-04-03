@@ -25,7 +25,7 @@ import {
   imports: [CommonModule],
   template: `<ng-content />`,
   host: {
-    'class': 'vue-flow__handle nodrag nopan',
+    'class': 'ng-flow__handle nodrag nopan',
     '[class.source]': 'type() === "source"',
     '[class.target]': 'type() === "target"',
     '[class.left]': 'position() === "left"',
@@ -125,7 +125,7 @@ export class HandleComponent {
 
   private _updateHandleBounds(): void {
     const el = this.el.nativeElement as HTMLElement;
-    const nodeEl = el.closest('.vue-flow__node') as HTMLElement;
+    const nodeEl = el.closest('.ng-flow__node') as HTMLElement;
     if (!nodeEl) return;
 
     const nodeId = this._nodeId;
@@ -293,18 +293,18 @@ export class HandleComponent {
       if (connection && connection.source !== connection.target) {
         const handleDom =
           flowRef.querySelector(
-            `.vue-flow__handle[data-nodeid="${closestHandle.nodeId}"][data-handleid="${closestHandle.id ?? ''}"]`,
+            `.ng-flow__handle[data-nodeid="${closestHandle.nodeId}"][data-handleid="${closestHandle.id ?? ''}"]`,
           ) ??
           flowRef.querySelector(
-            `.vue-flow__handle[data-nodeid="${closestHandle.nodeId}"].${closestHandle.type}`,
+            `.ng-flow__handle[data-nodeid="${closestHandle.nodeId}"].${closestHandle.type}`,
           );
 
         if (handleDom && handleDom !== prevActiveHandle) {
           resetRecentHandle(prevActiveHandle);
           prevActiveHandle = handleDom;
-          handleDom.classList.add('connecting', 'vue-flow__handle-connecting');
+          handleDom.classList.add('connecting', 'ng-flow__handle-connecting');
           handleDom.classList.toggle('valid', !!isValid);
-          handleDom.classList.toggle('vue-flow__handle-valid', !!isValid);
+          handleDom.classList.toggle('ng-flow__handle-valid', !!isValid);
         }
       }
     };

@@ -1,134 +1,243 @@
 :host {
   display: flex;
-  flex-direction: column;
   height: 100vh;
   overflow: hidden;
 }
 
-.layout {
-  display: flex;
-  flex-direction: column;
+/* ── Layout grid ─────────────────────────────────────────────── */
+.app-layout {
+  display: grid;
+  grid-template-rows: 65px 1fr;
+  grid-template-columns: 1fr;
+  width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #141720;
+  background: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.app-body {
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
-.header {
+.app-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  height: 48px;
-  min-height: 48px;
-  background: #1a1f2e;
-  border-bottom: 1px solid #2a2f3a;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 65px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
-  z-index: 10;
+  z-index: 20;
 }
 
-.logo-icon {
-  color: #6366f1;
-  display: block;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #e2e8f0;
-  letter-spacing: -0.01em;
+.header-logo {
+  width: 36px;
+  height: 36px;
+  background: #ff6d5a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
 }
 
-.spacer {
-  flex: 1;
-}
-
-.divider {
+.header-divider {
   width: 1px;
-  height: 20px;
-  background: #2a2f3a;
-  margin: 0 4px;
+  height: 24px;
+  background: #e5e7eb;
   flex-shrink: 0;
 }
 
-.stat {
-  font-size: 12px;
-  color: #6b7280;
+.breadcrumb {
   display: flex;
   align-items: center;
   gap: 4px;
-  white-space: nowrap;
+}
+
+.breadcrumb-item {
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.breadcrumb-item.active {
+  color: #111827;
+  font-weight: 500;
+}
+
+.breadcrumb-sep {
+  color: #9ca3af;
+  display: block;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hd {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 2px;
 }
 
 .zoom-badge {
   font-size: 12px;
-  color: #9ca3af;
+  color: #6b7280;
   font-variant-numeric: tabular-nums;
-  min-width: 40px;
+  min-width: 38px;
   text-align: center;
 }
 
-/* ── Buttons ────────────────────────────────────────────────── */
+/* ── Buttons ─────────────────────────────────────────────────── */
 .btn-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   border: none;
-  background: rgba(255, 255, 255, 0.06);
-  color: #9ca3af;
+  background: transparent;
+  color: #6b7280;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background 0.15s,
-    color 0.15s;
+  transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
 }
 
 .btn-icon:hover {
-  background: rgba(99, 102, 241, 0.2);
-  color: #818cf8;
+  background: #f3f4f6;
+  color: #111827;
 }
 
 .btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 10px;
-  border-radius: 7px;
-  border: none;
-  background: rgba(255, 255, 255, 0.06);
-  color: #9ca3af;
-  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
+  transition: background 0.15s, border-color 0.15s;
   white-space: nowrap;
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111827;
 }
 
-.btn.btn-primary {
-  background: rgba(99, 102, 241, 0.2);
-  color: #818cf8;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+.btn-add {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #374151;
 }
 
-.btn.btn-primary:hover {
-  background: rgba(99, 102, 241, 0.3);
-  color: #a5b4fc;
+.btn-add:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
-/* ── Canvas ─────────────────────────────────────────────────── */
-.canvas-wrap {
+.btn-execute {
+  background: #ff6d5a;
+  border-color: #ff6d5a;
+  color: #fff;
+}
+
+.btn-execute:hover {
+  background: #e85d4b;
+  border-color: #e85d4b;
+  color: #fff;
+}
+
+.btn-save {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #374151;
+}
+
+.btn-save:hover {
+  background: #f9fafb;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.app-sidebar {
+  width: 48px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   flex: 1;
-  min-height: 0;
+}
+
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 4px;
+}
+
+.sidebar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.sidebar-btn.active {
+  background: #fff0ee;
+  color: #ff6d5a;
+}
+
+/* ── Canvas area ─────────────────────────────────────────────── */
+.canvas-area {
+  flex: 1;
+  min-width: 0;
   position: relative;
+  overflow: hidden;
 }
 
 lib-ng-flow {

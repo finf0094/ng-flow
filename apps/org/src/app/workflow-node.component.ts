@@ -52,7 +52,7 @@ export interface WorkflowNodeData {
         box-sizing: border-box;
       }
       :host-context(.selected) .wf-node,
-      :host-context(.vue-flow__node.selected) .wf-node {
+      :host-context(.ng-flow__node.selected) .wf-node {
         box-shadow:
           0 0 0 2px var(--accent, #6366f1),
           0 4px 12px rgba(0, 0, 0, 0.15);

@@ -30,10 +30,10 @@ import type { ComponentType, GraphNode, NodeChange } from '../../types';
   providers: [],
   template: `<ng-container #container />`,
   host: {
-    class: 'vue-flow__node',
-    '[class.vue-flow__node-default]': 'node()?.type === "default"',
-    '[class.vue-flow__node-input]': 'node()?.type === "input"',
-    '[class.vue-flow__node-output]': 'node()?.type === "output"',
+    class: 'ng-flow__node',
+    '[class.ng-flow__node-default]': 'node()?.type === "default"',
+    '[class.ng-flow__node-input]': 'node()?.type === "input"',
+    '[class.ng-flow__node-output]': 'node()?.type === "output"',
     '[class.selected]': 'node()?.selected',
     '[class.dragging]': 'node()?.dragging',
     '[class.draggable]': '_isDraggable()',
@@ -154,7 +154,9 @@ export class NodeWrapperComponent implements OnInit, OnDestroy {
   }
 
   private _getComponentForType(type: string): ComponentType {
-    // Check custom node types first
+    // Check dynamically registered node types first
+    const customTypes = this.flow.nodeTypes();
+    if (customTypes[type]) return customTypes[type];
     switch (type) {
       case 'input':
         return InputNodeComponent;
