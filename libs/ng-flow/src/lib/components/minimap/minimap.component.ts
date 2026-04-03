@@ -1,22 +1,21 @@
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   OnDestroy,
   computed,
+  effect,
   inject,
   input,
   output,
+  untracked,
   ViewChild,
-  effect,
 } from '@angular/core';
 import { zoom, zoomIdentity } from 'd3-zoom';
 import type { D3ZoomEvent } from 'd3-zoom';
 import { pointer, select } from 'd3-selection';
 import { FlowService } from '../../services/flow.service';
-import { getBoundsofRects, getConnectedEdges, getRectOfNodes, isMacOs, wheelDelta } from '../../utils/graph';
+import { getBoundsofRects, getConnectedEdges, getRectOfNodes, isMacOs } from '../../utils/graph';
 import type { CoordinateExtent, GraphEdge, GraphNode, XYPosition } from '../../types';
-import { MiniMapNodeComponent } from './minimap-node.component';
 import type { ShapeRendering } from './minimap-node.component';
 import { PanelComponent } from '../panel/panel.component';
 import type { PanelPosition } from '../panel/panel.component';
@@ -41,41 +40,49 @@ function noop(): void {
 @Component({
   selector: 'lib-minimap',
   standalone: true,
-  imports: [MiniMapNodeComponent, PanelComponent],
+  imports: [PanelComponent],
   template: `
-    <lib-panel [position]="position()" class="vue-flow__minimap" [class.pannable]="pannable()" [class.zoomable]="zoomable()">
+    <lib-panel [position]="position()" class="ng-flow__minimap" [class.pannable]="pannable()" [class.zoomable]="zoomable()">
       <svg
         #svgEl
         [attr.width]="_elementWidth()"
         [attr.height]="_elementHeight()"
         [attr.viewBox]="_viewBoxAttr()"
         role="img"
-        [attr.aria-labelledby]="'vue-flow__minimap-' + _flowId()"
+        [attr.aria-labelledby]="'ng-flow__minimap-' + _flowId()"
+        style="display:block"
         (click)="onSvgClick($event)"
         (keydown.enter)="onSvgClick($any($event))"
       >
         @if (ariaLabel()) {
-          <title [id]="'vue-flow__minimap-' + _flowId()">{{ ariaLabel() }}</title>
+          <title [id]="'ng-flow__minimap-' + _flowId()">{{ ariaLabel() }}</title>
         }
 
         @for (node of _nodesInitialized(); track node.id) {
-          <lib-minimap-node
-            [node]="node"
-            [color]="_nodeColorFn()(node)"
-            [strokeColor]="_nodeStrokeColorFn()(node)"
-            [strokeWidth]="nodeStrokeWidth()"
-            [borderRadius]="nodeBorderRadius()"
-            [shapeRendering]="_shapeRendering"
-            (nodeClick)="onNodeClick($event, node)"
-            (nodeDblclick)="onNodeDblClick($event, node)"
-            (nodeMouseenter)="onNodeMouseEnter($event, node)"
-            (nodeMousemove)="onNodeMouseMove($event, node)"
-            (nodeMouseleave)="onNodeMouseLeave($event, node)"
+          <rect
+            class="ng-flow__minimap-node"
+            [class.selected]="node.selected"
+            [class.dragging]="node.dragging"
+            [attr.x]="node.computedPosition.x"
+            [attr.y]="node.computedPosition.y"
+            [attr.width]="node.dimensions.width"
+            [attr.height]="node.dimensions.height"
+            [attr.rx]="nodeBorderRadius()"
+            [attr.ry]="nodeBorderRadius()"
+            [attr.fill]="_nodeColorFn()(node)"
+            [attr.stroke]="_nodeStrokeColorFn()(node)"
+            [attr.stroke-width]="nodeStrokeWidth()"
+            [attr.shape-rendering]="_shapeRendering"
+            (click)="onNodeClick($event, node)"
+            (dblclick)="onNodeDblClick($event, node)"
+            (mouseenter)="onNodeMouseEnter($event, node)"
+            (mousemove)="onNodeMouseMove($event, node)"
+            (mouseleave)="onNodeMouseLeave($event, node)"
           />
         }
 
         <path
-          class="vue-flow__minimap-mask"
+          class="ng-flow__minimap-mask"
           [attr.d]="_maskPath()"
           [attr.fill]="maskColor()"
           [attr.stroke]="maskStrokeColor()"
@@ -86,14 +93,24 @@ function noop(): void {
     </lib-panel>
   `,
   styles: [`
-    :host { display: contents; }
-    :host ::ng-deep .vue-flow__minimap { background: #fff; }
-    :host ::ng-deep .vue-flow__minimap.pannable { cursor: grab; }
-    :host ::ng-deep .vue-flow__minimap.dragging { cursor: grabbing; }
-    :host ::ng-deep .vue-flow__minimap-mask.pannable { cursor: grab; }
+    :host {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    :host ::ng-deep .ng-flow__minimap {
+      pointer-events: all;
+      background: var(--nf-minimap-bg, #fff);
+    }
+    :host ::ng-deep .ng-flow__minimap.pannable { cursor: grab; }
+    :host ::ng-deep .ng-flow__minimap.dragging { cursor: grabbing; }
   `],
 })
-export class MiniMapComponent implements AfterViewInit, OnDestroy {
+export class MiniMapComponent implements OnDestroy {
   // ---- inputs ----
   readonly width = input<number | undefined>(undefined);
   readonly height = input<number | undefined>(undefined);
@@ -108,7 +125,7 @@ export class MiniMapComponent implements AfterViewInit, OnDestroy {
   readonly position = input<PanelPosition>('bottom-right');
   readonly pannable = input<boolean>(false);
   readonly zoomable = input<boolean>(false);
-  readonly ariaLabel = input<string>('Vue Flow mini map');
+  readonly ariaLabel = input<string>('ng-flow mini map');
   readonly inversePan = input<boolean>(false);
   readonly zoomStep = input<number>(1);
   readonly offsetScale = input<number>(5);
@@ -202,7 +219,7 @@ export class MiniMapComponent implements AfterViewInit, OnDestroy {
     const viewBB = this._viewBB();
     const r = this.maskBorderRadius();
 
-    if (!vb.x && !vb.y) {
+    if (!vb.width || !vb.height) {
       return '';
     }
 
@@ -226,19 +243,17 @@ export class MiniMapComponent implements AfterViewInit, OnDestroy {
   private _cleanupZoom?: () => void;
 
   constructor() {
-    // Re-attach D3 zoom/pan whenever pannable or zoomable inputs change
+    // Re-attach D3 zoom/pan whenever pannable, zoomable, or zoomStep change.
+    // Angular flushes effects after the first change-detection cycle (which runs
+    // after AfterViewInit), so svgElRef is already populated on first execution.
+    // untracked() prevents svgElRef from being tracked as a reactive dependency.
     effect(() => {
-      // Track reactive dependencies
       const _p = this.pannable();
       const _z = this.zoomable();
       const _zs = this.zoomStep();
       void _p; void _z; void _zs;
-      Promise.resolve().then(() => this._setupZoom());
+      untracked(() => this._setupZoom());
     });
-  }
-
-  ngAfterViewInit(): void {
-    this._setupZoom();
   }
 
   ngOnDestroy(): void {
@@ -270,6 +285,14 @@ export class MiniMapComponent implements AfterViewInit, OnDestroy {
       d3Zoom.scaleTo(d3Selection, nextZoom);
     };
 
+    const startHandler = (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+      if (event.sourceEvent?.type !== 'mousedown') return;
+      const svgEl = this.svgElRef?.nativeElement;
+      if (!svgEl) return;
+      const [x, y] = pointer(event.sourceEvent, svgEl);
+      this.flow.setCenter(x, y);
+    };
+
     const panHandler = (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
       if (event.sourceEvent?.type !== 'mousemove') return;
       const d3Zoom = this.flow.d3Zoom();
@@ -277,27 +300,26 @@ export class MiniMapComponent implements AfterViewInit, OnDestroy {
       if (!d3Selection || !d3Zoom) return;
 
       const vp = this.flow.viewport();
-      const moveScale = this._viewScale() * Math.max(1, vp.zoom) * (this.inversePan() ? -1 : 1);
       const dim = this.flow.dimensions();
-
-      const newX = vp.x - event.sourceEvent.movementX * moveScale;
-      const newY = vp.y - event.sourceEvent.movementY * moveScale;
+      const dir = this.inversePan() ? -1 : 1;
+      const newX = vp.x - event.sourceEvent.movementX * this._viewScale() * vp.zoom * dir;
+      const newY = vp.y - event.sourceEvent.movementY * this._viewScale() * vp.zoom * dir;
 
       const extent: CoordinateExtent = [[0, 0], [dim.width, dim.height]];
       const nextTransform = zoomIdentity.translate(newX, newY).scale(vp.zoom);
-      const constrainedTransform = d3Zoom.constrain()(nextTransform, extent, this.flow.translateExtent());
-
-      d3Zoom.transform(d3Selection, constrainedTransform);
+      const constrained = d3Zoom.constrain()(nextTransform, extent, this.flow.translateExtent());
+      d3Zoom.transform(d3Selection, constrained);
     };
 
     const zoomAndPanHandler = zoom<SVGSVGElement, unknown>()
-      .wheelDelta((event: WheelEvent) => wheelDelta(event) * (this.zoomStep() / 10))
+      .on('start', this.pannable() ? startHandler : noop)
       .on('zoom', this.pannable() ? panHandler : noop)
       .on('zoom.wheel', this.zoomable() ? zoomHandler : noop);
 
     selection.call(zoomAndPanHandler);
 
     this._cleanupZoom = () => {
+      selection.on('start', null);
       selection.on('zoom', null);
       selection.on('zoom.wheel', null);
     };
@@ -307,6 +329,10 @@ export class MiniMapComponent implements AfterViewInit, OnDestroy {
     const svgEl = this.svgElRef?.nativeElement;
     if (!svgEl) return;
     const [x, y] = pointer(event, svgEl);
+    // When pannable, startHandler already centers on mousedown — skip duplicate call.
+    if (!this.pannable()) {
+      this.flow.setCenter(x, y);
+    }
     this.svgClick.emit({ event, position: { x, y } });
   }
 

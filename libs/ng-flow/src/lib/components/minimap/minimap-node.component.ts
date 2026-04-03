@@ -11,7 +11,7 @@ export type ShapeRendering = 'auto' | 'optimizeSpeed' | 'crispEdges' | 'geometri
   template: `
     @if (!hidden() && dimensions().width && dimensions().height) {
       <rect
-        class="vue-flow__minimap-node"
+        class="ng-flow__minimap-node"
         [class.selected]="selected()"
         [class.dragging]="dragging()"
         [attr.x]="position().x"

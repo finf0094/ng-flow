@@ -16,7 +16,7 @@ import { NodeWrapperComponent } from './node-wrapper.component';
   standalone: true,
   imports: [CommonModule, NodeWrapperComponent],
   template: `
-    <div class="vue-flow__nodes vue-flow__container">
+    <div class="ng-flow__nodes ng-flow__container">
       @if (resizeObserver()) {
         @for (node of flow.getNodes(); track node.id) {
           <lib-node-wrapper

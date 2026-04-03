@@ -80,7 +80,7 @@ class DocCustomNodeComponent {
         </lib-ng-flow>
       </div>
 
-      <h2>Custom Nodes</h2>
+      <h2>Custom Nodes (per-node template)</h2>
       <p>
         Pass any Angular component class as the <code>template</code> property on a node to render
         it instead of the built-in node. The component must declare these signal inputs:
@@ -88,11 +88,32 @@ class DocCustomNodeComponent {
       </p>
       <pre class="code-block">{{ customNodeCode }}</pre>
 
-      <p class="live-label">Custom node</p>
+      <p class="live-label">Custom node via template</p>
       <div class="flow-wrap">
         <lib-ng-flow
           [nodes]="customNodes"
           [edges]="[]"
+          [fitViewOnInit]="true"
+          style="height: 280px"
+        >
+          <lib-background variant="dots" [gap]="20" color="#334155" bgColor="#0d1117" />
+        </lib-ng-flow>
+      </div>
+
+      <h2>nodeTypes — global type registry</h2>
+      <p>
+        Register a map of type name → component class via <code>[nodeTypes]</code> on
+        <code>&lt;lib-ng-flow&gt;</code>. Any node with a matching <code>type</code> will use that
+        component. This is identical to Vue Flow's <code>nodeTypes</code> prop.
+      </p>
+      <pre class="code-block">{{ nodeTypesCode }}</pre>
+
+      <p class="live-label">nodeTypes registry</p>
+      <div class="flow-wrap">
+        <lib-ng-flow
+          [nodes]="nodeTypesNodes"
+          [edges]="[]"
+          [nodeTypes]="nodeTypesMap"
           [fitViewOnInit]="true"
           style="height: 280px"
         >
@@ -133,6 +154,22 @@ export class NodesComponent {
   readonly customNodes: Node[] = [
     { id: 'c1', position: { x: 200, y: 100 }, label: 'My Custom Node', template: DocCustomNodeComponent },
   ];
+
+  readonly nodeTypesNodes: Node[] = [
+    { id: 't1', type: 'custom', position: { x: 200, y: 100 }, label: 'Custom Type Node' },
+  ];
+
+  readonly nodeTypesMap = { custom: DocCustomNodeComponent };
+
+  readonly nodeTypesCode = `// 1. Define your component
+@Component({ selector: 'app-my-node', ... })
+export class MyNodeComponent { ... }
+
+// 2. Register globally via [nodeTypes]
+const nodeTypes = { custom: MyNodeComponent };
+
+// 3. Use type: 'custom' on any node
+const nodes = [{ id: '1', type: 'custom', position: { x: 0, y: 0 }, label: 'Node' }];`;
 
   readonly customNodeCode = `import { Component, input } from '@angular/core';
 import { HandleComponent, Position } from '@org/ng-flow';

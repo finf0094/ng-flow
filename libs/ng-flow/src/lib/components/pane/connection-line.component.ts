@@ -24,10 +24,10 @@ const oppositePosition: Record<Position, Position> = {
   imports: [CommonModule],
   template: `
     @if (_isConnecting()) {
-      <svg class="vue-flow__edges vue-flow__connectionline vue-flow__container">
-        <g class="vue-flow__connection">
+      <svg class="ng-flow__edges ng-flow__connectionline ng-flow__container">
+        <g class="ng-flow__connection">
           <path
-            class="vue-flow__connection-path"
+            class="ng-flow__connection-path"
             [class]="flow.connectionLineOptions().class"
             [attr.d]="_path()"
             [ngStyle]="_style()"

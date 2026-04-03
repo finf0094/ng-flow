@@ -1,4 +1,25 @@
-.vue-flow {
+.ng-flow {
+  --nf-node-bg: #fff;
+  --nf-node-text: #222;
+  --nf-node-border: #1a192b;
+  --nf-node-border-selected: #555;
+  --nf-node-box-shadow: 0 0 0 0.5px #555;
+  --nf-handle-bg: #1a192b;
+  --nf-handle-border: #fff;
+  --nf-handle-connecting: #ff6060;
+  --nf-handle-valid: #55dd99;
+  --nf-edge-stroke: #b1b1b7;
+  --nf-edge-stroke-selected: #555;
+  --nf-edge-stroke-width: 1;
+  --nf-connection-stroke: #b1b1b7;
+  --nf-selection-bg: rgba(51, 103, 217, 0.04);
+  --nf-selection-border: #3367d9;
+  --nf-background-color: #fff;
+  --nf-minimap-bg: #fff;
+  --nf-controls-bg: #fff;
+  --nf-controls-border: #ddd;
+  --nf-controls-color: #222;
+  --nf-controls-hover-bg: #f4f4f4;
   position: relative;
   width: 100%;
   height: 100%;
@@ -7,7 +28,7 @@
   direction: ltr;
 }
 
-.vue-flow__container {
+.ng-flow__container {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -15,42 +36,42 @@
   top: 0;
 }
 
-.vue-flow__pane {
+.ng-flow__pane {
   z-index: 1;
   cursor: default;
 }
 
-.vue-flow__pane.draggable {
+.ng-flow__pane.draggable {
   cursor: grab;
 }
 
-.vue-flow__pane.selection {
+.ng-flow__pane.selection {
   cursor: pointer;
 }
 
-.vue-flow__pane.dragging {
+.ng-flow__pane.dragging {
   cursor: grabbing;
 }
 
-.vue-flow__transformationpane {
+.ng-flow__transformationpane {
   transform-origin: 0 0;
   z-index: 2;
   pointer-events: none;
 }
 
-.vue-flow__viewport {
+.ng-flow__viewport {
   z-index: 4;
   overflow: clip;
 }
 
-.vue-flow__selection {
+.ng-flow__selection {
   z-index: 6;
-  border: 1px dotted #3367d9;
-  background: rgba(51, 103, 217, 0.04);
+  border: 1px dotted var(--nf-selection-border);
+  background: var(--nf-selection-bg);
   pointer-events: none;
 }
 
-.vue-flow__edge-labels {
+.ng-flow__edge-labels {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -58,82 +79,92 @@
   user-select: none;
 }
 
-.vue-flow .vue-flow__edges {
+.ng-flow .ng-flow__edges {
   pointer-events: none;
   overflow: visible;
 }
 
-.vue-flow__edge-path,
-.vue-flow__connection-path {
-  stroke: #b1b1b7;
-  stroke-width: 1;
+.ng-flow__edge-path,
+.ng-flow__connection-path {
+  stroke: var(--nf-edge-stroke);
+  stroke-width: var(--nf-edge-stroke-width);
   fill: none;
 }
 
-.vue-flow__edge {
+.ng-flow__edge {
+  pointer-events: none;
+  cursor: default;
+}
+
+.ng-flow__edge-path {
   pointer-events: visibleStroke;
   cursor: pointer;
 }
 
-.vue-flow__edge.animated path {
+.ng-flow__edge-interaction {
+  pointer-events: visibleStroke;
+  cursor: pointer;
+}
+
+.ng-flow__edge.animated path {
   stroke-dasharray: 5;
   animation: dashdraw 0.5s linear infinite;
 }
 
-.vue-flow__edge.animated path.vue-flow__edge-interaction {
+.ng-flow__edge.animated path.ng-flow__edge-interaction {
   stroke-dasharray: none;
   animation: none;
 }
 
-.vue-flow__edge.inactive {
+.ng-flow__edge.inactive {
   pointer-events: none;
 }
 
-.vue-flow__edge.selected,
-.vue-flow__edge:focus,
-.vue-flow__edge:focus-visible {
+.ng-flow__edge.selected,
+.ng-flow__edge:focus,
+.ng-flow__edge:focus-visible {
   outline: none;
 }
 
-.vue-flow__edge.selected .vue-flow__edge-path,
-.vue-flow__edge:focus .vue-flow__edge-path,
-.vue-flow__edge:focus-visible .vue-flow__edge-path {
-  stroke: #555;
+.ng-flow__edge.selected .ng-flow__edge-path,
+.ng-flow__edge:focus .ng-flow__edge-path,
+.ng-flow__edge:focus-visible .ng-flow__edge-path {
+  stroke: var(--nf-edge-stroke-selected);
 }
 
-.vue-flow__edge-textwrapper {
+.ng-flow__edge-textwrapper {
   pointer-events: all;
 }
 
-.vue-flow__edge-textbg {
+.ng-flow__edge-textbg {
   fill: white;
 }
 
-.vue-flow__edge-text {
+.ng-flow__edge-text {
   font-size: 10px;
   fill: #333;
 }
 
-.vue-flow__connection .vue-flow__connection-path {
-  stroke: #b1b1b7;
+.ng-flow__connection .ng-flow__connection-path {
+  stroke: var(--nf-connection-stroke);
   stroke-dasharray: 5;
   animation: dashdraw 0.5s linear infinite;
   stroke-width: 1;
 }
 
-.vue-flow__connection-line-container {
+.ng-flow__connection-line-container {
   position: absolute;
   top: 0;
   left: 0;
   pointer-events: none;
 }
 
-.vue-flow__nodes {
+.ng-flow__nodes {
   pointer-events: none;
   transform-origin: 0 0;
 }
 
-.vue-flow__node {
+.ng-flow__node {
   position: absolute;
   user-select: none;
   pointer-events: all;
@@ -142,101 +173,101 @@
   cursor: default;
 }
 
-.vue-flow__node.draggable {
+.ng-flow__node.draggable {
   cursor: grab;
   pointer-events: all;
 }
 
-.vue-flow__node.draggable:hover {
+.ng-flow__node.draggable:hover {
   cursor: grab;
 }
 
-.vue-flow__node.dragging {
+.ng-flow__node.dragging {
   cursor: grabbing;
 }
 
-.vue-flow__nodesselection {
+.ng-flow__nodesselection {
   z-index: 3;
   transform-origin: left top;
   pointer-events: none;
 }
 
-.vue-flow__nodesselection-rect {
+.ng-flow__nodesselection-rect {
   position: absolute;
   pointer-events: all;
   cursor: grab;
 }
 
 /* Default node styles */
-.vue-flow__node-default,
-.vue-flow__node-input,
-.vue-flow__node-output {
+.ng-flow__node-default,
+.ng-flow__node-input,
+.ng-flow__node-output {
   padding: 10px;
   border-radius: 3px;
   width: 150px;
   font-size: 12px;
-  color: #222;
+  color: var(--nf-node-text);
   text-align: center;
   border-width: 1px;
   border-style: solid;
-  border-color: #1a192b;
-  background-color: #fff;
+  border-color: var(--nf-node-border);
+  background-color: var(--nf-node-bg);
 }
 
-.vue-flow__node-default.selected,
-.vue-flow__node-default:focus,
-.vue-flow__node-default:focus-visible,
-.vue-flow__node-input.selected,
-.vue-flow__node-input:focus,
-.vue-flow__node-input:focus-visible,
-.vue-flow__node-output.selected,
-.vue-flow__node-output:focus,
-.vue-flow__node-output:focus-visible {
+.ng-flow__node-default.selected,
+.ng-flow__node-default:focus,
+.ng-flow__node-default:focus-visible,
+.ng-flow__node-input.selected,
+.ng-flow__node-input:focus,
+.ng-flow__node-input:focus-visible,
+.ng-flow__node-output.selected,
+.ng-flow__node-output:focus,
+.ng-flow__node-output:focus-visible {
   outline: none;
-  border-color: #555;
-  box-shadow: 0 0 0 0.5px #555;
+  border-color: var(--nf-node-border-selected);
+  box-shadow: var(--nf-node-box-shadow);
 }
 
-.vue-flow__node-input {
+.ng-flow__node-input {
   border-color: #0041d0;
   background-color: #e8f4f8;
 }
 
-.vue-flow__node-output {
+.ng-flow__node-output {
   border-color: #ff0072;
   background-color: #ffe4ee;
 }
 
-.vue-flow__handle {
+.ng-flow__handle {
   position: absolute;
   pointer-events: all;
   min-width: 5px;
   min-height: 5px;
   width: 6px;
   height: 6px;
-  background: #1a192b;
-  border: 1px solid #fff;
+  background: var(--nf-handle-bg);
+  border: 1px solid var(--nf-handle-border);
   border-radius: 100%;
   cursor: crosshair;
 }
 
-.vue-flow__handle.connectable {
+.ng-flow__handle.connectable {
   cursor: crosshair;
 }
 
-.vue-flow__handle.source {
+.ng-flow__handle.source {
   bottom: -4px;
   left: 50%;
   transform: translate(-50%, 0);
 }
 
-.vue-flow__handle.target {
+.ng-flow__handle.target {
   top: -4px;
   left: 50%;
   transform: translate(-50%, 0);
 }
 
-.vue-flow__handle.left {
+.ng-flow__handle.left {
   left: -4px;
   top: 50%;
   right: auto;
@@ -244,7 +275,7 @@
   transform: translate(0, -50%);
 }
 
-.vue-flow__handle.right {
+.ng-flow__handle.right {
   right: -4px;
   top: 50%;
   left: auto;
@@ -252,42 +283,79 @@
   transform: translate(0, -50%);
 }
 
-.vue-flow__handle.connecting {
-  background: #ff6060;
+.ng-flow__handle.connecting {
+  background: var(--nf-handle-connecting);
 }
 
-.vue-flow__handle.valid {
-  background: #55dd99;
+.ng-flow__handle.valid {
+  background: var(--nf-handle-valid);
 }
 
-.vue-flow__panel {
+.ng-flow__panel {
   position: absolute;
+  display: inline-block;
   z-index: 5;
 }
 
-.vue-flow__panel.top {
+.ng-flow__panel.top {
   top: 10px;
 }
 
-.vue-flow__panel.bottom {
+.ng-flow__panel.bottom {
   bottom: 10px;
 }
 
-.vue-flow__panel.left {
+.ng-flow__panel.left {
   left: 10px;
 }
 
-.vue-flow__panel.right {
+.ng-flow__panel.right {
   right: 10px;
 }
 
-.vue-flow__panel.center {
+.ng-flow__panel.center {
   left: 50%;
   transform: translateX(-50%);
 }
 
-.vue-flow__background {
-  background-color: #fff;
+.ng-flow__background {
+  background-color: var(--nf-background-color);
+}
+
+/* ===== Controls ===== */
+.ng-flow__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ng-flow__controls-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: var(--nf-controls-bg, #fff);
+  border: 1px solid var(--nf-controls-border, #ddd);
+  border-radius: 2px;
+  color: var(--nf-controls-color, #222);
+  cursor: pointer;
+  padding: 4px;
+  user-select: none;
+}
+
+.ng-flow__controls-button:hover {
+  background: var(--nf-controls-hover-bg, #f4f4f4);
+}
+
+.ng-flow__controls-button svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.ng-flow__controls-button.active {
+  background: var(--nf-controls-hover-bg, #f4f4f4);
 }
 
 @keyframes dashdraw {
@@ -297,32 +365,32 @@
 }
 
 /* ===== Node Resizer ===== */
-.vue-flow__resize-control {
+.ng-flow__resize-control {
   position: absolute;
 }
 
-.vue-flow__resize-control.left,
-.vue-flow__resize-control.right {
+.ng-flow__resize-control.left,
+.ng-flow__resize-control.right {
   cursor: ew-resize;
 }
 
-.vue-flow__resize-control.top,
-.vue-flow__resize-control.bottom {
+.ng-flow__resize-control.top,
+.ng-flow__resize-control.bottom {
   cursor: ns-resize;
 }
 
-.vue-flow__resize-control.top.left,
-.vue-flow__resize-control.bottom.right {
+.ng-flow__resize-control.top.left,
+.ng-flow__resize-control.bottom.right {
   cursor: nwse-resize;
 }
 
-.vue-flow__resize-control.bottom.left,
-.vue-flow__resize-control.top.right {
+.ng-flow__resize-control.bottom.left,
+.ng-flow__resize-control.top.right {
   cursor: nesw-resize;
 }
 
 /* handle variant */
-.vue-flow__resize-control.handle {
+.ng-flow__resize-control.handle {
   width: 5px;
   height: 5px;
   border: 1px solid #fff;
@@ -331,40 +399,40 @@
   transform: translate(-50%, -50%);
 }
 
-.vue-flow__resize-control.handle.left   { left: 0;    top: 50%; }
-.vue-flow__resize-control.handle.right  { left: 100%; top: 50%; }
-.vue-flow__resize-control.handle.top    { left: 50%;  top: 0;   }
-.vue-flow__resize-control.handle.bottom { left: 50%;  top: 100%; }
-.vue-flow__resize-control.handle.top.left    { left: 0;    top: 0;    }
-.vue-flow__resize-control.handle.top.right   { left: 100%; top: 0;    }
-.vue-flow__resize-control.handle.bottom.left  { left: 0;    top: 100%; }
-.vue-flow__resize-control.handle.bottom.right { left: 100%; top: 100%; }
+.ng-flow__resize-control.handle.left   { left: 0;    top: 50%; }
+.ng-flow__resize-control.handle.right  { left: 100%; top: 50%; }
+.ng-flow__resize-control.handle.top    { left: 50%;  top: 0;   }
+.ng-flow__resize-control.handle.bottom { left: 50%;  top: 100%; }
+.ng-flow__resize-control.handle.top.left    { left: 0;    top: 0;    }
+.ng-flow__resize-control.handle.top.right   { left: 100%; top: 0;    }
+.ng-flow__resize-control.handle.bottom.left  { left: 0;    top: 100%; }
+.ng-flow__resize-control.handle.bottom.right { left: 100%; top: 100%; }
 
 /* line variant */
-.vue-flow__resize-control.line {
+.ng-flow__resize-control.line {
   border-color: #3367d9;
   border-width: 0;
   border-style: solid;
 }
 
-.vue-flow__resize-control.line.left,
-.vue-flow__resize-control.line.right {
+.ng-flow__resize-control.line.left,
+.ng-flow__resize-control.line.right {
   width: 4px;
   transform: translate(-50%, 0);
   top: 0;
   height: 100%;
 }
 
-.vue-flow__resize-control.line.left  { left: 0;    border-left-width: 2px; }
-.vue-flow__resize-control.line.right { left: 100%; border-right-width: 2px; }
+.ng-flow__resize-control.line.left  { left: 0;    border-left-width: 2px; }
+.ng-flow__resize-control.line.right { left: 100%; border-right-width: 2px; }
 
-.vue-flow__resize-control.line.top,
-.vue-flow__resize-control.line.bottom {
+.ng-flow__resize-control.line.top,
+.ng-flow__resize-control.line.bottom {
   height: 4px;
   transform: translate(0, -50%);
   left: 0;
   width: 100%;
 }
 
-.vue-flow__resize-control.line.top    { top: 0;    border-top-width: 2px; }
-.vue-flow__resize-control.line.bottom { top: 100%; border-bottom-width: 2px; }
+.ng-flow__resize-control.line.top    { top: 0;    border-top-width: 2px; }
+.ng-flow__resize-control.line.bottom { top: 100%; border-bottom-width: 2px; }

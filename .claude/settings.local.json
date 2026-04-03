@@ -16,7 +16,25 @@
       "Bash(NX_REJECT_UNKNOWN_LOCAL_CACHE=0 npx nx build luigi --skip-nx-cache)",
       "Bash(node -e \"const p = require\\(''./node_modules/lucide-angular/package.json''\\); console.log\\(JSON.stringify\\(p.exports, null, 2\\)\\)\")",
       "Bash(node:*)",
-      "Bash(grep -E \"\\\\.ts$|^total\")"
+      "Bash(grep -E \"\\\\.ts$|^total\")",
+      "Bash(nx lint:*)",
+      "Bash(xargs grep:*)",
+      "Read(//c/Users/1/.claude/plans/**)",
+      "Bash(rtk git:*)",
+      "Bash(rtk find:*)",
+      "Bash(rtk tsc:*)",
+      "Bash(rtk npx:*)",
+      "Bash(rtk grep:*)",
+      "Bash(grep -E '\\\\.ts$')",
+      "Bash(find c:/Users/1/workspaces/ng-flow/examples/vue-flow -type f -name *MiniMap* -o -name *minimap* -o -name *Background* -o -name *Controls*)",
+      "Bash(grep -n \"getIntersecting\\\\|isNodeInter\\\\|panBy\\\\|setInteractive\\\\|updateNodeData\\\\|updateEdgeData\\\\|updateNodeInternals\\\\|addSelected\\\\|removeSelected\\\\|$reset\\\\|$destroy\" libs/ng-flow/src/lib/services/flow.service.ts)",
+      "Bash(grep -n \"edgeUpdate$\\\\|edgeUpdateStart\\\\|edgeUpdateEnd\" libs/ng-flow/src/lib/services/flow.service.ts)",
+      "Bash(grep -n \"edgeUpdate\\\\b\\\\|edgeUpdate$\" libs/ng-flow/src/lib/services/flow.service.ts)",
+      "Bash(rtk gh:*)",
+      "Bash(grep -n \"ViewportTransform\" /c/Users/1/workspaces/ng-flow/libs/ng-flow/src/lib/types/*.ts)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\1\\.claude\\plans"
     ]
   }
 }

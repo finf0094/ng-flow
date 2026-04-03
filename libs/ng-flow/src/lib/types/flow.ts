@@ -1,5 +1,5 @@
 export type CSSProperties = Record<string, string | number | null | undefined>;
-import type { CoordinateExtent, CoordinateExtentRange, GraphNode, Node } from './node';
+import type { ComponentType, CoordinateExtent, CoordinateExtentRange, GraphNode, Node } from './node';
 import type { DefaultEdgeOptions, Edge, EdgeUpdatable, GraphEdge } from './edge';
 import type {
   Connection,
@@ -154,4 +154,6 @@ export interface FlowProps {
   autoPanOnConnect?: boolean;
   autoPanOnNodeDrag?: boolean;
   autoPanSpeed?: number;
+  nodeTypes?: Record<string, ComponentType>;
+  edgeTypes?: Record<string, ComponentType>;
 }

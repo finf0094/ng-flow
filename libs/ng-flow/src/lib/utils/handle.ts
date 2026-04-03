@@ -36,9 +36,9 @@ export { oppositePosition };
 export function resetRecentHandle(el: Element | null): void {
   el?.classList.remove(
     'connecting',
-    'vue-flow__handle-connecting',
+    'ng-flow__handle-connecting',
     'valid',
-    'vue-flow__handle-valid',
+    'ng-flow__handle-valid',
   );
 }
 

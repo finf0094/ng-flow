@@ -12,11 +12,13 @@ import { ApiReferenceComponent } from './pages/api-reference.component';
 import { DemoComponent } from './pages/demo.component';
 import { CustomizationComponent } from './pages/customization.component';
 import { MiniMapPageComponent } from './pages/minimap.component';
+import { CustomEdgesComponent } from './pages/custom-edges.component';
 
 type PageId =
   | 'intro'
   | 'nodes'
   | 'edges'
+  | 'custom-edges'
   | 'handles'
   | 'interactivity'
   | 'background'
@@ -50,6 +52,7 @@ interface NavItem {
     CustomizationComponent,
     MiniMapPageComponent,
     DemoComponent,
+    CustomEdgesComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -61,6 +64,7 @@ export class App {
     { id: 'intro',         label: 'Getting Started', icon: '🚀' },
     { id: 'nodes',         label: 'Nodes',           icon: '⬡' },
     { id: 'edges',         label: 'Edges',           icon: '⟿' },
+    { id: 'custom-edges',  label: 'Custom Edges',    icon: '⤳' },
     { id: 'handles',       label: 'Handles',         icon: '◉' },
     { id: 'interactivity', label: 'Interactivity',   icon: '🔗' },
     { id: 'background',    label: 'Background',      icon: '⊟' },

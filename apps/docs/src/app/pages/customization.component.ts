@@ -28,7 +28,7 @@ import { Component } from '@angular/core';
       <!-- ── Custom Handle Styling ──────────────────────────────── -->
       <h2>Custom Handle Styling</h2>
       <p>
-        Handles use the class <code>.vue-flow__handle</code> and can be styled via CSS.
+        Handles use the class <code>.ng-flow__handle</code> and can be styled via CSS.
         Each handle also gets the class <code>source</code> or <code>target</code> and a
         position class like <code>left</code>, <code>right</code>, <code>top</code>, or
         <code>bottom</code>.
@@ -97,7 +97,7 @@ export class CustomizationComponent {
   },
 };`;
 
-  readonly handleCss = `.vue-flow__handle {
+  readonly handleCss = `.ng-flow__handle {
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -105,7 +105,7 @@ export class CustomizationComponent {
   border: 1.5px solid #4b5563;
 }
 
-.vue-flow__handle.source:hover {
+.ng-flow__handle.source:hover {
   transform: translate(0, -50%) scale(1.5);
   border-color: #818cf8;
 }`;

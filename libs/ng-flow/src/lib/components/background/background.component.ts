@@ -9,7 +9,7 @@ export type BackgroundVariant = 'dots' | 'lines';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <svg class="vue-flow__background vue-flow__container" style="z-index:0">
+    <svg class="ng-flow__background ng-flow__container" style="z-index:0">
       <defs>
         <pattern
           [id]="_patternId()"

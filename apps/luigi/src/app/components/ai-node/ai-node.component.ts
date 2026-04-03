@@ -27,11 +27,9 @@ export interface AiNodeData {
       [class.success]="data().status === 'success'"
       [class.error]="data().status === 'error'"
     >
-      <!-- AI badge -->
       <div class="ai-badge">AI</div>
-
       <div class="icon-wrap">
-        <app-icon [name]="data().icon" [size]="26" class="icon" />
+        <app-icon [name]="data().icon" [size]="24" class="icon" />
       </div>
     </div>
 
@@ -55,65 +53,74 @@ export interface AiNodeData {
       :host:hover .toolbar { display: flex; }
 
       .node {
-        width: 100px;
-        height: 100px;
-        background: #1a1428;
-        border-radius: 12px;
-        border: 1.5px solid rgba(139, 92, 246, 0.45);
+        width: 96px;
+        height: 96px;
+        background: #fff;
+        border-radius: 8px;
+        border: 1.5px solid #ddd6fe;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition:
-          box-shadow 0.2s ease,
-          border-color 0.2s ease;
-        box-shadow:
-          0 0 0 1px rgba(139, 92, 246, 0.25),
-          0 0 18px rgba(139, 92, 246, 0.15),
-          0 4px 16px rgba(0, 0, 0, 0.4);
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 1px 4px rgba(139, 92, 246, 0.08);
         position: relative;
       }
 
-      /* Selected glow */
       .node.is-selected {
-        box-shadow:
-          0 0 0 3px rgba(139, 92, 246, 0.5),
-          0 0 20px rgba(139, 92, 246, 0.3),
-          0 4px 16px rgba(0, 0, 0, 0.4);
-        border-color: rgba(139, 92, 246, 0.8);
+        box-shadow: 0 0 0 6px rgba(139, 92, 246, 0.15);
+        border-color: #8b5cf6;
       }
 
-      /* Status variants */
       .node.success {
-        border-color: #22c55e;
-        border-width: 2px;
+        border: 2px solid #27a35a;
       }
 
       .node.error {
-        border-color: #ef4444;
-        border-width: 2px;
+        border: 1.5px solid #e53935;
       }
 
       .node.running {
-        animation: pulse-ai 1.5s ease-in-out infinite;
+        border-color: transparent;
+        animation: ai-running 1.5s linear infinite;
       }
 
-      @keyframes pulse-ai {
-        0%,
-        100% {
-          box-shadow:
-            0 0 0 0 rgba(139, 92, 246, 0),
-            0 0 18px rgba(139, 92, 246, 0.15),
-            0 4px 16px rgba(0, 0, 0, 0.4);
-        }
-        50% {
-          box-shadow:
-            0 0 0 12px rgba(139, 92, 246, 0),
-            0 0 30px rgba(139, 92, 246, 0.4),
-            0 4px 16px rgba(0, 0, 0, 0.4);
-        }
+      @property --ai-angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
       }
 
-      /* AI badge */
+      @keyframes ai-running {
+        to { --ai-angle: 360deg; }
+      }
+
+      .node.running::before {
+        content: '';
+        position: absolute;
+        inset: -1.5px;
+        border-radius: inherit;
+        background: conic-gradient(
+          from var(--ai-angle),
+          rgba(139, 92, 246, 1) 0deg,
+          rgba(139, 92, 246, 0.3) 60deg,
+          transparent 120deg,
+          transparent 240deg,
+          rgba(139, 92, 246, 0.3) 300deg,
+          rgba(139, 92, 246, 1) 360deg
+        );
+        z-index: -1;
+        animation: ai-running 1.5s linear infinite;
+      }
+
+      .node.running::after {
+        content: '';
+        position: absolute;
+        inset: 1.5px;
+        border-radius: calc(8px - 1.5px);
+        background: #fff;
+        z-index: -1;
+      }
+
       .ai-badge {
         position: absolute;
         top: -7px;
@@ -126,26 +133,24 @@ export interface AiNodeData {
         border-radius: 4px;
         padding: 2px 5px;
         line-height: 1;
-        box-shadow: 0 2px 6px rgba(109, 40, 217, 0.5);
+        box-shadow: 0 1px 4px rgba(109, 40, 217, 0.3);
       }
 
-      /* Icon wrapper */
       .icon-wrap {
-        width: 54px;
-        height: 54px;
-        border-radius: 12px;
-        background: color-mix(in srgb, #8b5cf6 22%, #1a1428);
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background: color-mix(in srgb, #8b5cf6 10%, #f9fafb);
         display: flex;
         align-items: center;
         justify-content: center;
       }
 
       :host ::ng-deep .icon {
-        color: #a78bfa;
+        color: #8b5cf6;
         display: block;
       }
 
-      /* Label below card */
       .meta {
         position: absolute;
         top: calc(100% + 10px);
@@ -158,8 +163,8 @@ export interface AiNodeData {
 
       .name {
         font-size: 13px;
-        font-weight: 600;
-        color: #e2e8f0;
+        font-weight: 500;
+        color: #111827;
         line-height: 1.3;
         display: -webkit-box;
         -webkit-box-orient: vertical;
@@ -169,8 +174,8 @@ export interface AiNodeData {
 
       .subtitle {
         font-size: 11px;
-        color: #7c3aed;
-        margin-top: 3px;
+        color: #8b5cf6;
+        margin-top: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

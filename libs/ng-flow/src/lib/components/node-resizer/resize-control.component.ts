@@ -41,7 +41,7 @@ export interface ResizeParamsWithDirection extends ResizeParams {
   standalone: true,
   template: `<ng-content />`,
   host: {
-    class: 'vue-flow__resize-control nodrag',
+    class: 'ng-flow__resize-control nodrag',
     '[class.handle]': 'variant() === "handle"',
     '[class.line]': 'variant() === "line"',
     '[class.top]': '_hasTop()',

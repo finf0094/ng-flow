@@ -12,8 +12,8 @@ body {
 }
 
 /* ---- ng-flow canvas theme ---- */
-.vue-flow { background: #131620; }
-.vue-flow__pane { background: transparent; }
+.ng-flow { background: #131620; }
+.ng-flow__pane { background: transparent; }
 
 /* ---- code blocks ---- */
 .code-block {

@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import {
   NgFlowComponent,
   BackgroundComponent,
+  MiniMapComponent,
   ConnectionMode,
   MarkerType,
   type NodeChange,
@@ -20,6 +21,7 @@ import { LucideAngularModule } from './icons';
   imports: [
     NgFlowComponent,
     BackgroundComponent,
+    MiniMapComponent,
     NodePaletteComponent,
     LucideAngularModule,
   ],

@@ -15,6 +15,9 @@ export { HandleComponent } from './components/handle/handle.component';
 export { PanelComponent } from './components/panel/panel.component';
 export type { PanelPosition } from './components/panel/panel.component';
 
+// Controls
+export { ControlsComponent } from './components/controls/controls.component';
+
 // MiniMap
 export { MiniMapComponent } from './components/minimap/minimap.component';
 export { MiniMapNodeComponent } from './components/minimap/minimap-node.component';
@@ -28,6 +31,14 @@ export { StraightEdgeComponent } from './components/edges/straight-edge.componen
 export { StepEdgeComponent } from './components/edges/step-edge.component';
 export { SmoothStepEdgeComponent } from './components/edges/smooth-step-edge.component';
 export { SimpleBezierEdgeComponent } from './components/edges/simple-bezier-edge.component';
+export { EdgeLabelRendererComponent } from './components/edges/edge-label-renderer.component';
+export { EDGE_ID_TOKEN } from './components/edges/edge-id.token';
+
+// Edge renderer components
+export { EdgeWrapperComponent } from './components/edge-renderer/edge-wrapper.component';
+
+// Selection components
+export { NodesSelectionComponent } from './components/pane/nodes-selection.component';
 
 // Node components
 export { DefaultNodeComponent } from './components/nodes/default-node.component';

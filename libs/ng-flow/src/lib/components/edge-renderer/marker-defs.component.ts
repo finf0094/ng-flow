@@ -1,4 +1,4 @@
-import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FlowService } from '../../services/flow.service';
 import { MarkerType } from '../../types';
@@ -12,23 +12,22 @@ interface ResolvedMarker {
   height: number;
   markerUnits: string;
   orient: string;
-  strokeWidth?: number;
+  strokeWidth: number;
 }
 
 @Component({
   selector: 'lib-marker-defs',
   standalone: true,
   imports: [CommonModule],
-  schemas: [NO_ERRORS_SCHEMA],
   template: `
-    <svg class="vue-flow__marker vue-flow__container" aria-hidden="true">
+    <svg class="ng-flow__marker ng-flow__container" aria-hidden="true">
       <defs>
         @for (marker of _markers(); track marker.id) {
           <marker
             [attr.id]="marker.id"
-            class="vue-flow__arrowhead"
+            class="ng-flow__arrowhead"
             viewBox="-10 -10 20 20"
-            refX="5"
+            refX="0"
             refY="0"
             [attr.markerWidth]="marker.width"
             [attr.markerHeight]="marker.height"
@@ -38,7 +37,7 @@ interface ResolvedMarker {
             @if (marker.type === 'arrowclosed') {
               <polyline
                 points="-5,-4 0,0 -5,4 -5,-4"
-                [ngStyle]="{ stroke: marker.color, fill: marker.color, 'stroke-width': marker.strokeWidth ?? 1 }"
+                [ngStyle]="{ stroke: marker.color, fill: marker.color, 'stroke-width': marker.strokeWidth }"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
@@ -46,8 +45,8 @@ interface ResolvedMarker {
             @if (marker.type === 'arrow') {
               <polyline
                 points="-5,-4 0,0 -5,4"
-                [ngStyle]="{ stroke: marker.color, 'stroke-width': marker.strokeWidth ?? 1 }"
                 fill="none"
+                [ngStyle]="{ stroke: marker.color, 'stroke-width': marker.strokeWidth }"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
@@ -73,7 +72,7 @@ interface ResolvedMarker {
 export class MarkerDefsComponent {
   private readonly flow = inject(FlowService);
 
-  _markers = computed<ResolvedMarker[]>(() => {
+  readonly _markers = computed<ResolvedMarker[]>(() => {
     const edges = this.flow.edges();
     const defaultColor = this.flow.defaultMarkerColor();
     const flowId = this.flow.id();
@@ -90,20 +89,18 @@ export class MarkerDefsComponent {
       let height = 12.5;
       let markerUnits = 'strokeWidth';
       let orient = 'auto-start-reverse';
-      let strokeWidth: number | undefined;
+      let strokeWidth = 1;
 
       if (typeof markerProp === 'string') {
         type = markerProp;
-      } else if (typeof markerProp === 'object') {
-        type = (markerProp as any).type ?? MarkerType.Arrow;
-        color = (markerProp as any).color ?? defaultColor;
-        width = (markerProp as any).width ?? 12.5;
-        height = (markerProp as any).height ?? 12.5;
-        markerUnits = (markerProp as any).markerUnits ?? 'strokeWidth';
-        orient = (markerProp as any).orient ?? 'auto-start-reverse';
-        strokeWidth = (markerProp as any).strokeWidth;
       } else {
-        type = markerProp;
+        type = markerProp.type ?? MarkerType.Arrow;
+        color = markerProp.color ?? defaultColor;
+        width = markerProp.width ?? 12.5;
+        height = markerProp.height ?? 12.5;
+        markerUnits = markerProp.markerUnits ?? 'strokeWidth';
+        orient = markerProp.orient ?? 'auto-start-reverse';
+        strokeWidth = markerProp.strokeWidth ?? 1;
       }
 
       const id = getMarkerId(markerProp, flowId);
@@ -113,11 +110,9 @@ export class MarkerDefsComponent {
       markers.push({ id, type, color, width, height, markerUnits, orient, strokeWidth });
     };
 
-    // Connection line markers first (same order as vue-flow MarkerDefinitions)
     addMarker(connOpts.markerEnd);
     addMarker(connOpts.markerStart);
 
-    // Edge markers
     for (const edge of edges) {
       addMarker(edge.markerStart);
       addMarker(edge.markerEnd);

@@ -5,5 +5,5 @@
 body { margin: 0; }
 
 /* Dark canvas background for the ng-flow pane */
-.vue-flow { background: #131620; }
-.vue-flow__pane { background: transparent; }
+.ng-flow { background: #131620; }
+.ng-flow__pane { background: transparent; }
